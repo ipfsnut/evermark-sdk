@@ -1,14 +1,25 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { resolveImageSources } from '@evermark-sdk/core';
-import { ImageLoader, CORSHandler, PerformanceMonitor } from '@evermark-sdk/browser';
+import { ImageLoader, CORSHandler, PerformanceMonitor, type LoadImageResult } from '@evermark-sdk/browser';
 import type { 
   ImageSourceInput, 
   SourceResolutionConfig,
-  ImageLoaderOptions,
-  LoadImageResult 
+  LoadAttempt
 } from '@evermark-sdk/core';
 
-export interface UseImageLoaderOptions extends ImageLoaderOptions {
+export interface UseImageLoaderOptions {
+  /** Maximum number of retry attempts per source */
+  maxRetries?: number;
+  /** Timeout for each load attempt in milliseconds */
+  timeout?: number;
+  /** Whether to use CORS mode */
+  useCORS?: boolean;
+  /** Custom headers for requests */
+  headers?: Record<string, string>;
+  /** Progress callback */
+  onProgress?: (loaded: number, total: number) => void;
+  /** Debug mode for detailed logging */
+  debug?: boolean;
   /** Whether to start loading immediately */
   autoLoad?: boolean;
   /** Resolution configuration */
@@ -89,7 +100,7 @@ export function useImageLoader(
 
     // Initialize image loader
     loaderRef.current = new ImageLoader({
-      debug: import.meta.env.DEV,
+      debug: process.env.NODE_ENV === 'development',
       timeout: 8000,
       maxRetries: 2,
       ...loaderOptions
@@ -134,11 +145,15 @@ export function useImageLoader(
       const result: LoadImageResult = await loaderRef.current.loadImage(processedSources);
 
       // Update attempts
-      const attemptResults = result.attempts?.map(attempt => ({
-        url: attempt.source.url,
-        success: attempt.status === 'success',
-        error: attempt.error
-      })) || [];
+      const attemptResults = result.attempts?.map((attempt: LoadAttempt) => {
+        const base = {
+          url: attempt.source.url,
+          success: attempt.status === 'success'
+        };
+        return attempt.error !== undefined
+          ? { ...base, error: attempt.error }
+          : base;
+      }) || [];
       setAttempts(attemptResults);
 
       if (result.success && result.imageUrl) {

@@ -99,6 +99,8 @@ export interface SourceResolutionConfig {
   mobileOptimization?: boolean;
   /** Custom priority overrides */
   priorityOverrides?: Record<string, number>;
+  /** Prefer thumbnail over full resolution */
+  preferThumbnail?: boolean;
 }
 
 /**
@@ -150,3 +152,34 @@ export type SourceLoader = (
   source: ImageSource, 
   signal?: AbortSignal
 ) => Promise<Result<string, ImageLoadingError>>;
+
+/**
+ * Options for image loader instances
+ */
+export interface ImageLoaderOptions {
+  /** Maximum number of retry attempts per source */
+  maxRetries?: number;
+  /** Timeout for each load attempt in milliseconds */
+  timeout?: number;
+  /** Whether to use CORS mode */
+  useCORS?: boolean;
+  /** Custom headers for requests */
+  headers?: Record<string, string>;
+  /** Progress callback */
+  onProgress?: (loaded: number, total: number) => void;
+  /** Debug mode for detailed logging */
+  debug?: boolean;
+}
+
+/**
+ * Result of image loading operation
+ */
+export interface LoadImageResult {
+  success: boolean;
+  imageUrl?: string;
+  source?: ImageSource;
+  loadTime?: number;
+  fromCache?: boolean;
+  error?: string;
+  attempts?: LoadAttempt[];
+}

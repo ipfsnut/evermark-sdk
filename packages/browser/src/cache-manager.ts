@@ -165,7 +165,8 @@ export class CacheManager {
     const now = Date.now();
     
     // Remove expired entries
-    for (const [url, entry] of this.cache.entries()) {
+    const entries = Array.from(this.cache.entries());
+    for (const [url, entry] of entries) {
       const age = now - entry.timestamp;
       if (age > this.config.ttl) {
         this.delete(url);
@@ -174,7 +175,7 @@ export class CacheManager {
 
     // If still over limits, remove least recently used
     if (this.cache.size > this.config.maxEntries || this.totalSize > this.config.maxSize) {
-      const entries = Array.from(this.cache.entries())
+      const sortedEntries = Array.from(this.cache.entries())
         .sort(([, a], [, b]) => a.lastAccessed - b.lastAccessed);
 
       const toRemove = Math.max(
@@ -182,8 +183,8 @@ export class CacheManager {
         this.totalSize > this.config.maxSize ? Math.ceil(this.cache.size * 0.2) : 0
       );
 
-      for (let i = 0; i < toRemove && i < entries.length; i++) {
-        const entryToDelete = entries[i];
+      for (let i = 0; i < toRemove && i < sortedEntries.length; i++) {
+        const entryToDelete = sortedEntries[i];
         if (entryToDelete) {
           this.delete(entryToDelete[0]);
         }

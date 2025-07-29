@@ -40,13 +40,25 @@ export const EvermarkImage: React.FC<EvermarkImageProps> = ({
   onImageError
 }) => {
   // Convert evermark data to ImageSourceInput
-  const sources: ImageSourceInput = {
-    supabaseUrl: evermark.supabaseImageUrl,
-    thumbnailUrl: evermark.thumbnailUrl,
-    processedUrl: evermark.processed_image_url,
-    ipfsHash: evermark.ipfsHash,
-    preferThumbnail: variant === 'compact' || variant === 'list'
-  };
+  const sources: ImageSourceInput = {};
+  
+  if (evermark.supabaseImageUrl) {
+    sources.supabaseUrl = evermark.supabaseImageUrl;
+  }
+  if (evermark.thumbnailUrl) {
+    sources.thumbnailUrl = evermark.thumbnailUrl;
+  }
+  if (evermark.processed_image_url) {
+    sources.processedUrl = evermark.processed_image_url;
+  }
+  if (evermark.ipfsHash) {
+    sources.ipfsHash = evermark.ipfsHash;
+  }
+  
+  const preferThumbnail = variant === 'compact' || variant === 'list';
+  if (preferThumbnail) {
+    sources.preferThumbnail = true;
+  }
 
   // Variant-specific styles
   const getVariantStyles = () => {
@@ -105,6 +117,18 @@ export const EvermarkImage: React.FC<EvermarkImageProps> = ({
     </div>
   );
 
+  // Resolution config
+  const resolutionConfig: { preferThumbnail?: boolean; maxSources: number } = { maxSources: 3 };
+  if (preferThumbnail) {
+    resolutionConfig.preferThumbnail = true;
+  }
+
+  // Loader options
+  const loaderOptions = {
+    debug: process.env.NODE_ENV === 'development',
+    timeout: variant === 'list' ? 5000 : 8000
+  };
+
   return (
     <div className={`${getVariantStyles()} ${className} group cursor-pointer hover:scale-105 transition-transform`}>
       <ImageDisplay
@@ -113,16 +137,10 @@ export const EvermarkImage: React.FC<EvermarkImageProps> = ({
         className="w-full h-full object-cover"
         loadingPlaceholder={placeholder}
         errorPlaceholder={errorPlaceholder}
-        onLoad={onImageLoad}
+        onLoad={onImageLoad ? ((url: string, fromCache: boolean) => { onImageLoad(); }) : undefined}
         onError={onImageError}
-        resolution={{
-          preferThumbnail: variant === 'compact' || variant === 'list',
-          maxSources: 3
-        }}
-        loaderOptions={{
-          debug: import.meta.env.DEV,
-          timeout: variant === 'list' ? 5000 : 8000
-        }}
+        resolution={resolutionConfig}
+        loaderOptions={loaderOptions}
       />
 
       {/* Status indicators */}

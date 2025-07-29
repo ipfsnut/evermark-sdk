@@ -29,7 +29,9 @@ export type {
   ImageLoadingEventHandler,
   SourceResolver,
   SourceLoader,
-  Result
+  Result,
+  ImageLoaderOptions,
+  LoadImageResult
 } from './types.js';
 
 export { ImageLoadingError } from './types.js';
