@@ -1,0 +1,50 @@
+{
+  "name": "@evermark-sdk/browser",
+  "version": "0.1.0",
+  "description": "Browser-specific image loading with CORS and caching",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@evermark-sdk/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^1.3.0",
+    "@vitest/coverage-v8": "^1.3.0",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@types/dom-testing-library": "^8.0.0"
+  },
+  "keywords": [
+    "image",
+    "browser",
+    "cors",
+    "cache",
+    "performance"
+  ],
+  "author": "ipfsnut",
+  "license": "MIT"
+}
+
