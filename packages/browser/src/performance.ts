@@ -66,15 +66,20 @@ export class PerformanceMonitor {
       if (!sourceStats[metric.source]) {
         sourceStats[metric.source] = { total: 0, successful: 0 };
       }
-      sourceStats[metric.source].total++;
-      if (metric.success) {
-        sourceStats[metric.source].successful++;
+      const stats = sourceStats[metric.source];
+      if (stats) {
+        stats.total++;
+        if (metric.success) {
+          stats.successful++;
+        }
       }
     }
 
     const sourceSuccessRates: Record<string, number> = {};
     for (const [source, stats] of Object.entries(sourceStats)) {
-      sourceSuccessRates[source] = stats.successful / stats.total;
+      if (stats) {
+        sourceSuccessRates[source] = stats.successful / stats.total;
+      }
     }
 
     // Calculate common errors

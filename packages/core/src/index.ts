@@ -45,6 +45,10 @@ export {
   validateImageSources
 } from './url-resolver.js';
 
+// Import the types we need for the utility functions
+import type { ImageSourceInput, SourceResolutionConfig } from './types.js';
+import { resolveImageSources } from './url-resolver.js';
+
 // Package metadata
 export const PACKAGE_VERSION = '0.1.0';
 export const PACKAGE_NAME = '@evermark-sdk/core';

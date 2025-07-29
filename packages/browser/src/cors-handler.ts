@@ -85,9 +85,12 @@ export class CORSHandler {
         const supabaseObj = new URL(this.config.supabaseUrl);
         
         // Ensure we're using the project's storage domain
-        if (!urlObj.hostname.startsWith(supabaseObj.hostname.split('.')[0])) {
+        const supabaseHostnameParts = supabaseObj.hostname.split('.');
+        const firstPart = supabaseHostnameParts[0];
+        
+        if (firstPart && !urlObj.hostname.startsWith(firstPart)) {
           // Reconstruct URL with correct subdomain
-          urlObj.hostname = `${supabaseObj.hostname.split('.')[0]}.supabase.co`;
+          urlObj.hostname = `${firstPart}.supabase.co`;
           return urlObj.toString();
         }
       } catch {

@@ -1,7 +1,14 @@
-export { ImageLoader } from './image-loader.js';
-export { CORSHandler } from './cors-handler.js';
-export { CacheManager } from './cache-manager.js';
-export { PerformanceMonitor } from './performance.js';
+import { ImageLoader } from './image-loader.js';
+import { CORSHandler } from './cors-handler.js';
+import { CacheManager } from './cache-manager.js';
+import { PerformanceMonitor } from './performance.js';
+import type { ImageLoaderOptions, LoadImageResult } from './image-loader.js';
+import type { CORSConfig } from './cors-handler.js';
+import type { CacheEntry, CacheConfig } from './cache-manager.js';
+import type { LoadMetrics, PerformanceStats } from './performance.js';
+
+// Re-export everything
+export { ImageLoader, CORSHandler, CacheManager, PerformanceMonitor };
 
 export type {
   ImageLoaderOptions,
@@ -27,7 +34,7 @@ export function createSupabaseImageLoader(supabaseUrl: string, anonKey: string) 
 
   return new ImageLoader({
     useCORS: true,
-    debug: import.meta.env.DEV,
+    debug: false, // Remove the env check - can be overridden by user
     timeout: 8000,
     maxRetries: 2
   });

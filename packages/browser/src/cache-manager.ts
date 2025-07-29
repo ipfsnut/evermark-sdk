@@ -183,7 +183,10 @@ export class CacheManager {
       );
 
       for (let i = 0; i < toRemove && i < entries.length; i++) {
-        this.delete(entries[i][0]);
+        const entryToDelete = entries[i];
+        if (entryToDelete) {
+          this.delete(entryToDelete[0]);
+        }
       }
     }
   }

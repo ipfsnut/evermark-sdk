@@ -72,11 +72,29 @@ export function createIpfsUrl(hash: string, gateway: string = DEFAULT_CONFIG.ipf
 /**
  * Determines storage provider from URL
  */
-function getStorageProvider(url: string): ImageSource['metadata']['storageProvider'] {
+function getStorageProvider(url: string): 'supabase' | 'ipfs' | 'cdn' | 'external' {
   if (url.includes('supabase')) return 'supabase';
   if (url.includes('ipfs') || url.includes('pinata')) return 'ipfs';
   if (url.includes('cloudflare') || url.includes('cdn')) return 'cdn';
   return 'external';
+}
+
+/**
+ * Extract image format from URL
+ */
+function extractImageFormat(url: string): 'jpg' | 'png' | 'gif' | 'webp' | 'svg' | undefined {
+  try {
+    const pathname = new URL(url).pathname.toLowerCase();
+    const extension = pathname.split('.').pop();
+    
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension || '')) {
+      return extension === 'jpeg' ? 'jpg' : extension as 'jpg' | 'png' | 'gif' | 'webp' | 'svg';
+    }
+  } catch {
+    // Invalid URL, ignore
+  }
+  
+  return undefined;
 }
 
 /**
@@ -94,23 +112,32 @@ export const resolveImageSources: SourceResolver = (
     url: string,
     type: ImageSource['type'],
     basePriority: number,
-    size?: string
+    size?: 'thumbnail' | 'medium' | 'large' | 'original'
   ) => {
     if (!isValidUrl(url)) return;
 
     const customPriority = finalConfig.priorityOverrides[url];
     const priority = customPriority ?? basePriority;
     
+    const metadata: ImageSource['metadata'] = {
+      storageProvider: getStorageProvider(url)
+    };
+    
+    if (size) {
+      metadata.size = size;
+    }
+    
+    const format = extractImageFormat(url);
+    if (format) {
+      metadata.format = format;
+    }
+
     sources.push({
       url,
       type,
       priority,
       timeout: DEFAULT_TIMEOUTS[type] || finalConfig.defaultTimeout,
-      metadata: {
-        storageProvider: getStorageProvider(url),
-        size: size as any,
-        format: extractImageFormat(url)
-      }
+      metadata
     });
   };
 
@@ -159,24 +186,6 @@ export const resolveImageSources: SourceResolver = (
 
   return sortedSources;
 };
-
-/**
- * Extract image format from URL
- */
-function extractImageFormat(url: string): string | undefined {
-  try {
-    const pathname = new URL(url).pathname.toLowerCase();
-    const extension = pathname.split('.').pop();
-    
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension || '')) {
-      return extension === 'jpeg' ? 'jpg' : extension;
-    }
-  } catch {
-    // Invalid URL, ignore
-  }
-  
-  return undefined;
-}
 
 /**
  * Creates a placeholder source for fallback display
@@ -244,6 +253,11 @@ export function validateImageSources(sources: ImageSource[]): { valid: boolean; 
 
   for (let i = 0; i < sources.length; i++) {
     const source = sources[i];
+    
+    if (!source) {
+      errors.push(`Source at index ${i} is undefined`);
+      continue;
+    }
     
     if (!isValidUrl(source.url)) {
       errors.push(`Invalid URL at index ${i}: ${source.url}`);
