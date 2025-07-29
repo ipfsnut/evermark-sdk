@@ -19,7 +19,8 @@ const DEFAULT_CONFIG: Required<SourceResolutionConfig> = {
   includeIpfs: true,
   ipfsGateway: 'https://gateway.pinata.cloud/ipfs',
   mobileOptimization: false,
-  priorityOverrides: {}
+  priorityOverrides: {},
+  preferThumbnail: false  // ← ADD THIS MISSING PROPERTY
 };
 
 /**
@@ -142,18 +143,18 @@ export const resolveImageSources: SourceResolver = (
   };
 
   // 1. Add thumbnail first if preferred or on mobile
-  if ((input.preferThumbnail || finalConfig.mobileOptimization) && input.thumbnailUrl) {
+  if ((input.preferThumbnail || finalConfig.preferThumbnail || finalConfig.mobileOptimization) && input.thumbnailUrl) {
     addSource(input.thumbnailUrl, 'thumbnail', 1, 'thumbnail');
   }
 
   // 2. Add primary Supabase URL
   if (input.supabaseUrl) {
-    const priority = input.preferThumbnail ? 2 : 1;
+    const priority = (input.preferThumbnail || finalConfig.preferThumbnail) ? 2 : 1;
     addSource(input.supabaseUrl, 'primary', priority, 'large');
   }
 
   // 3. Add thumbnail if not already added
-  if (!input.preferThumbnail && !finalConfig.mobileOptimization && input.thumbnailUrl) {
+  if (!(input.preferThumbnail || finalConfig.preferThumbnail) && !finalConfig.mobileOptimization && input.thumbnailUrl) {
     addSource(input.thumbnailUrl, 'thumbnail', 2, 'thumbnail');
   }
 
