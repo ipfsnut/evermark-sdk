@@ -1,0 +1,47 @@
+@evermark-sdk/
+├── core/              # Central coordination & configuration  
+├── images/ 🚀         # STARTING HERE - Image handling
+├── blockchain/        # Smart contract interactions
+├── storage/           # Supabase + IPFS management
+├── metadata/          # Content validation & transformation
+├── social/            # Farcaster, Twitter integrations
+├── search/            # Search, filtering, discovery
+├── analytics/         # Usage tracking & performance
+├── react/             # React components & hooks
+└── testing/           # Test utilities & mocks
+
+
+@evermark-sdk/images/
+├── core/                    # Pure image logic
+│   ├── url-resolver.ts      # Source prioritization  
+│   ├── image-validator.ts   # File validation
+│   ├── format-detector.ts   # Image format detection
+│   └── optimization.ts      # Compression algorithms
+├── browser/                 # Browser-specific
+│   ├── image-loader.ts      # Native Image() wrapper
+│   ├── cors-handler.ts      # Supabase authentication
+│   ├── cache-manager.ts     # Browser cache optimization
+│   ├── lazy-loader.ts       # IntersectionObserver
+│   └── performance.ts       # Loading metrics
+├── processing/              # Image processing
+│   ├── compressor.ts        # Client-side compression
+│   ├── resizer.ts           # Dynamic resizing  
+│   ├── thumbnail.ts         # Thumbnail generation
+│   └── format-converter.ts  # Format conversion
+├── react/                   # React integration
+│   ├── hooks/               # useImageLoader, useLazyImage, etc.
+│   ├── components/          # ImageDisplay, ImageUpload, etc.
+│   └── providers/           # ImageConfigProvider
+└── testing/                 # Test utilities
+    ├── mock-images.ts       # Test image data
+    ├── test-server.ts       # Mock HTTP server
+    └── helpers.ts           # Testing utilities
+
+
+## End-to-End Image Flow
+
+Upload: Validate → Compress → Thumbnail → Upload to Supabase + IPFS
+Storage: Multiple URLs saved with backup redundancy
+Display: Resolve sources → Try in priority → Handle CORS → Show result
+Debug: Detailed logs → Error classification → Retry options
+
