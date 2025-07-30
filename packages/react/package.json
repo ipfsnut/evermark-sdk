@@ -31,8 +31,8 @@
     "react-dom": "^18.0.0"
   },
   "dependencies": {
-    "@evermark-sdk/core": "workspace:*",
-    "@evermark-sdk/browser": "workspace:*"
+    "@evermark-sdk/core": "0.1.0",
+    "@evermark-sdk/browser": "0.1.0"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
