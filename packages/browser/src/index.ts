@@ -44,7 +44,7 @@ export type {
   UploadProgress,
   StorageFlowResult,
   ImageSourceInput
-} from '@evermark-sdk/core';
+} from '@ipfsnut/evermark-sdk-core';
 
 // =================
 // CONVENIENCE FUNCTIONS
@@ -63,7 +63,7 @@ export function createEnhancedImageLoader(
   bucketName: string = 'images',
   options: Partial<import('./enhanced-image-loader.js').EnhancedImageLoaderOptions> = {}
 ): EnhancedImageLoader {
-  const { createDefaultStorageConfig } = require('@evermark-sdk/core');
+  const { createDefaultStorageConfig } = require('@ipfsnut/evermark-sdk-core');
   const storageConfig = createDefaultStorageConfig(supabaseUrl, supabaseKey, bucketName);
   
   return new EnhancedImageLoader({

@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { resolveImageSources } from '@evermark-sdk/core';
-import { ImageLoader, CORSHandler, PerformanceMonitor, type LoadImageResult } from '@evermark-sdk/browser';
+import { resolveImageSources } from '@ipfsnut/evermark-sdk-core';
+import { ImageLoader, CORSHandler, PerformanceMonitor, type LoadImageResult } from '@ipfsnut/evermark-sdk-browser';
 import type { 
   ImageSourceInput, 
   SourceResolutionConfig,
   LoadAttempt
-} from '@evermark-sdk/core';
+} from '@ipfsnut/evermark-sdk-core';
 
 export interface UseImageLoaderOptions {
   /** Maximum number of retry attempts per source */

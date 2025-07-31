@@ -18,6 +18,7 @@
   ],
   "references": [
     { "path": "../core" },
+    { "path": "../storage" },
     { "path": "../browser" }
   ]
 }

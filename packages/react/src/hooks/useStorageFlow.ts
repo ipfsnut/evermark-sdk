@@ -3,13 +3,13 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { StorageOrchestrator } from '@evermark-sdk/storage';
+import { StorageOrchestrator } from '@ipfsnut/evermark-sdk-storage';
 import type { 
   ImageSourceInput, 
   StorageConfig, 
   StorageFlowResult, 
   UploadProgress 
-} from '@evermark-sdk/core';
+} from '@ipfsnut/evermark-sdk-core';
 
 export interface UseStorageFlowOptions {
   storageConfig: StorageConfig;

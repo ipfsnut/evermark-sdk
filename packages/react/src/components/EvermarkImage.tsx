@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { ImageDisplay } from './ImageDisplay.js';
 import { ImageTransferStatus } from './ImageTransferStatus.js';
-import type { ImageSourceInput, StorageConfig } from '@evermark-sdk/core';
+import type { ImageSourceInput, StorageConfig } from '@ipfsnut/evermark-sdk-core';
 
 interface EvermarkImageProps {
   /** Evermark data */

@@ -7,7 +7,7 @@ import type {
   StorageConfig, 
   TransferResult, 
   UploadProgress
-} from '@evermark-sdk/core';
+} from '@ipfsnut/evermark-sdk-core';
 
 export interface SupabaseUploadOptions {
   path?: string;

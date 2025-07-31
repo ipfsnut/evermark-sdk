@@ -1,7 +1,7 @@
 /**
  * IPFS fetching with multiple gateway fallbacks
  */
-import type { StorageConfig } from '@evermark-sdk/core';
+import type { StorageConfig } from '@ipfsnut/evermark-sdk-core';
 export interface IPFSFetchOptions {
     timeout?: number;
     maxRetries?: number;

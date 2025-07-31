@@ -3,8 +3,8 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { SupabaseStorageClient } from '@evermark-sdk/storage';
-import type { StorageConfig, UploadProgress } from '@evermark-sdk/core';
+import { SupabaseStorageClient } from '@ipfsnut/evermark-sdk-storage';
+import type { StorageConfig, UploadProgress } from '@ipfsnut/evermark-sdk-core';
 
 export interface UseImageUploadOptions {
   storageConfig: StorageConfig;

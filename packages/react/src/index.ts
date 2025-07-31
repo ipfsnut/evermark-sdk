@@ -53,4 +53,4 @@ export type {
   UploadProgress,
   StorageFlowResult,
   ImageSourceInput
-} from '@evermark-sdk/core';
+} from '@ipfsnut/evermark-sdk-core';

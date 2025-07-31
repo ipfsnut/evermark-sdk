@@ -30,9 +30,9 @@
     "react-dom": "^18.0.0"
   },
   "dependencies": {
-    "@ipfsnut/evermark-sdk-core": "^0.1.0",
-    "@ipfsnut/evermark-sdk-storage": "^0.1.0",
-    "@ipfsnut/evermark-sdk-browser": "^0.1.0"
+    "@ipfsnut/evermark-sdk-core": "workspace:*",
+    "@ipfsnut/evermark-sdk-storage": "workspace:*",
+    "@ipfsnut/evermark-sdk-browser": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.3.3",

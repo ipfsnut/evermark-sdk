@@ -5,6 +5,8 @@
 export { SupabaseStorageClient } from './supabase-client.js';
 export { IPFSClient } from './ipfs-client.js';
 export { StorageOrchestrator } from './storage-orchestrator.js';
+// Import the actual class to use in functions
+import { StorageOrchestrator } from './storage-orchestrator.js';
 // Main flow functions
 export async function ensureImageInSupabase(input, config, onProgress) {
     const orchestrator = new StorageOrchestrator(config);

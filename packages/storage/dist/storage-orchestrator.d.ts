@@ -1,7 +1,7 @@
 /**
  * YOUR MAIN 3-STEP FLOW IMPLEMENTATION
  */
-import type { ImageSourceInput, StorageConfig, StorageFlowResult, UploadProgress } from '@evermark-sdk/core';
+import type { ImageSourceInput, StorageConfig, StorageFlowResult, UploadProgress, TransferResult } from '@ipfsnut/evermark-sdk-core';
 export declare class StorageOrchestrator {
     private config;
     private supabaseClient;

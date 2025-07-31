@@ -3,15 +3,16 @@
  */
 
 import { ImageLoader } from './image-loader.js';
-import { StorageOrchestrator } from '@evermark-sdk/storage';
-import { resolveImageSources } from '@evermark-sdk/core';
+import { StorageOrchestrator } from '@ipfsnut/evermark-sdk-storage';
+import { resolveImageSources } from '@ipfsnut/evermark-sdk-core';
 import type { 
   ImageSource, 
   ImageSourceInput,
   StorageConfig,
   LoadImageResult,
-  UploadProgress
-} from '@evermark-sdk/core';
+  UploadProgress,
+  StorageFlowResult
+} from '@ipfsnut/evermark-sdk-core';
 import type { ImageLoaderOptions } from './image-loader.js';
 
 export interface EnhancedImageLoaderOptions extends ImageLoaderOptions {

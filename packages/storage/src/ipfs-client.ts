@@ -2,8 +2,8 @@
  * IPFS fetching with multiple gateway fallbacks
  */
 
-import { isValidIpfsHash } from '@evermark-sdk/core';
-import type { StorageConfig } from '@evermark-sdk/core';
+import { isValidIpfsHash } from '@ipfsnut/evermark-sdk-core';
+import type { StorageConfig } from '@ipfsnut/evermark-sdk-core';
 
 export interface IPFSFetchOptions {
   timeout?: number;
@@ -113,7 +113,9 @@ export class IPFSClient {
                 }
                 
                 loaded += value?.length || 0;
-                onProgress(loaded, total || undefined);
+                if (onProgress) {
+                  onProgress(loaded, total || undefined);
+                }
                 controller.enqueue(value);
                 return pump();
               });

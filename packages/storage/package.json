@@ -27,7 +27,7 @@
     "test:ipfs": "vitest --run ipfs.test.ts"
   },
   "dependencies": {
-    "@ipfsnut/evermark-sdk-core": "^0.1.0",
+    "@ipfsnut/evermark-sdk-core": "workspace:*",
     "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {

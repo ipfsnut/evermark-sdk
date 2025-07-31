@@ -7,14 +7,26 @@ export { SupabaseStorageClient } from './supabase-client.js';
 export { IPFSClient } from './ipfs-client.js';
 export { StorageOrchestrator } from './storage-orchestrator.js';
 
-// Types (re-exported from core for convenience)
+// Import and re-export types from core
+import type {
+  StorageConfig,
+  TransferResult,
+  UploadProgress,
+  StorageFlowResult,
+  ImageSourceInput
+} from '@ipfsnut/evermark-sdk-core';
+
+// Re-export types for convenience
 export type {
   StorageConfig,
   TransferResult,
   UploadProgress,
   StorageFlowResult,
   ImageSourceInput
-} from '@evermark-sdk/core';
+};
+
+// Import the actual class to use in functions
+import { StorageOrchestrator } from './storage-orchestrator.js';
 
 // Main flow functions
 export async function ensureImageInSupabase(

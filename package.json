@@ -22,7 +22,10 @@
     "demo:upload": "node scripts/demo-upload.js",
     "demo:transfer": "node scripts/demo-transfer.js",
     "demo:flow": "node scripts/demo-complete-flow.js",
-    "setup:env": "node scripts/setup-env.js"
+    "setup:env": "node scripts/setup-env.js",
+    "install:all": "pnpm install",
+    "build:all": "pnpm build",
+    "dev:all": "pnpm dev"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
@@ -38,7 +41,7 @@
     "prettier": "^3.2.5",
     "dotenv": "^16.4.1",
     "form-data": "^4.0.0",
-    "@types/form-data": "^4.0.4"
+    "@types/form-data": "^2.5.2"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -58,5 +61,6 @@
     "packages/*",
     "apps/*", 
     "tools/*"
-  ]
+  ],
+  "packageManager": "pnpm@8.6.10"
 }

@@ -6,9 +6,10 @@ import type {
   ImageSourceInput, 
   StorageConfig, 
   StorageFlowResult,
-  UploadProgress
-} from '@evermark-sdk/core';
-import { generateStoragePath, isValidIpfsHash } from '@evermark-sdk/core';
+  UploadProgress,
+  TransferResult
+} from '@ipfsnut/evermark-sdk-core';
+import { generateStoragePath, isValidIpfsHash } from '@ipfsnut/evermark-sdk-core';
 import { SupabaseStorageClient } from './supabase-client.js';
 import { IPFSClient } from './ipfs-client.js';
 
@@ -92,7 +93,7 @@ export class StorageOrchestrator {
             transferPerformed: true,
             transferResult,
             totalTime: Date.now() - startTime,
-            warnings: warnings.length > 0 ? warnings : undefined
+            ...(warnings.length > 0 && { warnings })
           };
         } else {
           warnings.push(`IPFS transfer failed: ${transferResult.error}`);
@@ -177,7 +178,7 @@ export class StorageOrchestrator {
             phase: 'uploading',
             percentage: 20 + progressPercent,
             uploaded: loaded,
-            total,
+            ...(total !== undefined && { total }),
             message: `Downloading from IPFS (${ipfsResult.gateway || 'unknown gateway'})...`
           });
         }
@@ -272,7 +273,7 @@ export class StorageOrchestrator {
     return {
       supabase: {
         available: supabaseTest.success,
-        latency: supabaseTest.latency
+        ...(supabaseTest.success && supabaseTest.latency !== undefined && { latency: supabaseTest.latency })
       },
       ipfs: {
         available: ipfsTest.some(g => g.available),
