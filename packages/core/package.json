@@ -12,7 +12,9 @@
     }
   },
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsc",
@@ -35,7 +37,12 @@
     "url-resolution",
     "typescript",
     "storage",
-    "types"
+    "types",
+    "evermark",
+    "ipfs",
+    "supabase",
+    "blockchain",
+    "web3"
   ],
   "author": "ipfsnut",
   "license": "MIT",
@@ -43,5 +50,13 @@
     "type": "git",
     "url": "https://github.com/ipfsnut/evermark-sdk.git",
     "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/ipfsnut/evermark-sdk/issues"
+  },
+  "homepage": "https://github.com/ipfsnut/evermark-sdk#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
