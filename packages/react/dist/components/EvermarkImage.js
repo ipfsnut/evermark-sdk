@@ -13,14 +13,23 @@ import { ImageTransferStatus } from './ImageTransferStatus.js';
 export const EvermarkImage = ({ evermark, storageConfig, variant = 'standard', showPlaceholder = true, enableAutoTransfer = true, showTransferStatus = true, className = '', onImageLoad, onImageError, onTransferComplete }) => {
     const [currentSupabaseUrl, setCurrentSupabaseUrl] = useState(evermark.supabaseImageUrl);
     const [transferInProgress, setTransferInProgress] = useState(false);
-    // Convert evermark data to ImageSourceInput
-    const sources = {
-        supabaseUrl: currentSupabaseUrl,
-        thumbnailUrl: evermark.thumbnailUrl,
-        processedUrl: evermark.processed_image_url,
-        ipfsHash: evermark.ipfsHash,
-        preferThumbnail: variant === 'compact' || variant === 'list'
-    };
+    // Convert evermark data to ImageSourceInput - handle strict TypeScript mode
+    const sources = {};
+    // Only add properties if they have values (strict mode compliance)
+    if (currentSupabaseUrl) {
+        sources.supabaseUrl = currentSupabaseUrl;
+    }
+    if (evermark.thumbnailUrl) {
+        sources.thumbnailUrl = evermark.thumbnailUrl;
+    }
+    if (evermark.processed_image_url) {
+        sources.processedUrl = evermark.processed_image_url;
+    }
+    if (evermark.ipfsHash) {
+        sources.ipfsHash = evermark.ipfsHash;
+    }
+    // Set preferThumbnail flag
+    sources.preferThumbnail = variant === 'compact' || variant === 'list';
     // Only show transfer if storage config is provided and conditions are met
     const shouldShowTransfer = storageConfig &&
         enableAutoTransfer &&
@@ -73,6 +82,17 @@ export const EvermarkImage = ({ evermark, storageConfig, variant = 'standard', s
         debug: false,
         timeout: variant === 'list' ? 5000 : 8000
     };
-    return (_jsxs("div", { className: `${getVariantStyles()} ${className} group cursor-pointer hover:scale-105 transition-transform`, children: [_jsx(ImageDisplay, { sources: sources, alt: evermark.title, className: "w-full h-full object-cover", loadingPlaceholder: placeholder, errorPlaceholder: errorPlaceholder, onLoad: onImageLoad ? ((url, fromCache) => { onImageLoad(); }) : undefined, onError: onImageError, resolution: resolutionConfig, loaderOptions: loaderOptions }), shouldShowTransfer && evermark.ipfsHash && storageConfig && (_jsx("div", { className: "absolute top-2 left-2 bg-black/80 text-white text-xs p-2 rounded backdrop-blur-sm", children: _jsx(ImageTransferStatus, { ipfsHash: evermark.ipfsHash, storageConfig: storageConfig, onTransferComplete: handleTransferComplete, onTransferError: onImageError, autoStart: enableAutoTransfer }) })), evermark.imageStatus === 'processing' && (_jsx("div", { className: "absolute bottom-2 left-2 bg-black/80 text-xs px-2 py-1 rounded backdrop-blur-sm", children: _jsxs("div", { className: "flex items-center gap-1", children: [_jsx("div", { className: "w-2 h-2 bg-blue-400 rounded-full animate-pulse" }), _jsx("span", { className: "text-blue-400", children: "Processing" })] }) })), transferInProgress && (_jsx("div", { className: "absolute top-2 right-2 bg-blue-500/90 text-white text-xs px-2 py-1 rounded backdrop-blur-sm", children: _jsxs("div", { className: "flex items-center gap-1", children: [_jsx("div", { className: "w-2 h-2 bg-white rounded-full animate-pulse" }), _jsx("span", { children: "Transferring" })] }) })), _jsxs("div", { className: "absolute bottom-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-xs font-mono backdrop-blur-sm", children: ["#", evermark.tokenId] })] }));
+    // Handle transfer status props - strict mode compliance
+    const transferStatusProps = {
+        ipfsHash: evermark.ipfsHash,
+        storageConfig: storageConfig,
+        onTransferComplete: handleTransferComplete,
+        autoStart: enableAutoTransfer
+    };
+    // Only add onTransferError if defined
+    if (onImageError) {
+        transferStatusProps.onTransferError = onImageError;
+    }
+    return (_jsxs("div", { className: `${getVariantStyles()} ${className} group cursor-pointer hover:scale-105 transition-transform`, children: [_jsx(ImageDisplay, { sources: sources, alt: evermark.title, className: "w-full h-full object-cover", loadingPlaceholder: placeholder, errorPlaceholder: errorPlaceholder, onLoad: onImageLoad ? ((url, fromCache) => { onImageLoad(); }) : undefined, onError: onImageError, resolution: resolutionConfig, loaderOptions: loaderOptions }), shouldShowTransfer && evermark.ipfsHash && storageConfig && (_jsx("div", { className: "absolute top-2 left-2 bg-black/80 text-white text-xs p-2 rounded backdrop-blur-sm", children: _jsx(ImageTransferStatus, { ...transferStatusProps }) })), evermark.imageStatus === 'processing' && (_jsx("div", { className: "absolute bottom-2 left-2 bg-black/80 text-xs px-2 py-1 rounded backdrop-blur-sm", children: _jsxs("div", { className: "flex items-center gap-1", children: [_jsx("div", { className: "w-2 h-2 bg-blue-400 rounded-full animate-pulse" }), _jsx("span", { className: "text-blue-400", children: "Processing" })] }) })), transferInProgress && (_jsx("div", { className: "absolute top-2 right-2 bg-blue-500/90 text-white text-xs px-2 py-1 rounded backdrop-blur-sm", children: _jsxs("div", { className: "flex items-center gap-1", children: [_jsx("div", { className: "w-2 h-2 bg-white rounded-full animate-pulse" }), _jsx("span", { children: "Transferring" })] }) })), _jsxs("div", { className: "absolute bottom-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-xs font-mono backdrop-blur-sm", children: ["#", evermark.tokenId] })] }));
 };
 //# sourceMappingURL=EvermarkImage.js.map

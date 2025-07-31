@@ -4,7 +4,7 @@
 
 import React, { useCallback, useState, useEffect } from 'react';
 import { useImageUpload } from '../hooks/useImageUpload.js';
-import type { StorageConfig } from '@evermark-sdk/core';
+import type { StorageConfig } from '@ipfsnut/evermark-sdk-core';
 
 interface ImageUploadProps {
   storageConfig: StorageConfig;
@@ -27,17 +27,26 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
 
-  const { status, progress, result, error, upload } = useImageUpload({
+  // Handle strict TypeScript mode - only pass defined values
+  const uploadOptions = {
     storageConfig,
-    generateThumbnails,
-    allowedTypes,
-    maxFileSize
-  });
+    generateThumbnails
+  };
+
+  // Only add optional properties if they have values
+  if (allowedTypes) {
+    Object.assign(uploadOptions, { allowedTypes });
+  }
+  if (maxFileSize) {
+    Object.assign(uploadOptions, { maxFileSize });
+  }
+
+  const { status, progress, result, error, upload } = useImageUpload(uploadOptions);
 
   // Handle completion
   useEffect(() => {
-    if (status === 'complete' && result) {
-      onUploadComplete?.(result);
+    if (status === 'complete' && result && result.originalUrl) {
+      onUploadComplete?.(result as { originalUrl: string; thumbnailUrl?: string });
     }
   }, [status, result, onUploadComplete]);
 

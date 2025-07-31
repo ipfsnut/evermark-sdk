@@ -2,7 +2,7 @@
  * Complete upload component with drag & drop
  */
 import React from 'react';
-import type { StorageConfig } from '@evermark-sdk/core';
+import type { StorageConfig } from '@ipfsnut/evermark-sdk-core';
 interface ImageUploadProps {
     storageConfig: StorageConfig;
     onUploadComplete?: (result: {

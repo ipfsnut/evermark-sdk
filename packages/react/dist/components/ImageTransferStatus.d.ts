@@ -2,7 +2,7 @@
  * Shows transfer progress and status
  */
 import React from 'react';
-import type { StorageConfig } from '@evermark-sdk/core';
+import type { StorageConfig } from '@ipfsnut/evermark-sdk-core';
 interface ImageTransferStatusProps {
     ipfsHash: string;
     storageConfig: StorageConfig;

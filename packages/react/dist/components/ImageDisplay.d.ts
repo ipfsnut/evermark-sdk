@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ImageSourceInput, SourceResolutionConfig } from '@evermark-sdk/core';
+import type { ImageSourceInput, SourceResolutionConfig } from '@ipfsnut/evermark-sdk-core';
 import type { UseImageLoaderOptions } from '../hooks/useImageLoader.js';
 export interface ImageDisplayProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src' | 'onLoad' | 'onError'> {
     /** Image source input */

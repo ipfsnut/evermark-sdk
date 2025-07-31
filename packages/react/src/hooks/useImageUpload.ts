@@ -86,10 +86,18 @@ export function useImageUpload(options: UseImageUploadOptions): UseImageUploadRe
         throw new Error(uploadResult.error || 'Upload failed');
       }
 
-      setResult({
-        originalUrl: uploadResult.supabaseUrl,
-        thumbnailUrl: undefined // Could add thumbnail generation here
-      });
+      // Handle strict TypeScript mode - only set originalUrl if defined
+      if (uploadResult.supabaseUrl) {
+        const uploadResultObj: { originalUrl: string; thumbnailUrl?: string } = {
+          originalUrl: uploadResult.supabaseUrl
+        };
+        // Only add thumbnailUrl if we actually generate one
+        // thumbnailUrl: undefined // Could add thumbnail generation here
+        setResult(uploadResultObj);
+      } else {
+        throw new Error('Upload succeeded but no URL returned');
+      }
+      
       setStatus('complete');
 
       if (debug) console.log('[ImageUpload] Upload completed');

@@ -4,7 +4,7 @@
 
 import React, { useEffect } from 'react';
 import { useStorageFlow } from '../hooks/useStorageFlow.js';
-import type { StorageConfig } from '@evermark-sdk/core';
+import type { StorageConfig } from '@ipfsnut/evermark-sdk-core';
 
 interface ImageTransferStatusProps {
   ipfsHash: string;

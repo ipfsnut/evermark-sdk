@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { useImageLoader } from '../hooks/useImageLoader.js';
-import type { ImageSourceInput, SourceResolutionConfig } from '@evermark-sdk/core';
+import type { ImageSourceInput, SourceResolutionConfig } from '@ipfsnut/evermark-sdk-core';
 import type { UseImageLoaderOptions } from '../hooks/useImageLoader.js';
 
 export interface ImageDisplayProps
