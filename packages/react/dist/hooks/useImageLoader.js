@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { resolveImageSources } from '@evermark-sdk/core';
-import { ImageLoader, CORSHandler, PerformanceMonitor } from '@evermark-sdk/browser';
+import { resolveImageSources } from '@ipfsnut/evermark-sdk-core';
+import { ImageLoader, CORSHandler, PerformanceMonitor } from '@ipfsnut/evermark-sdk-browser';
 /**
  * React hook for loading images with intelligent fallbacks
  */

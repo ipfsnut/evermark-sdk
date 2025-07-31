@@ -9,11 +9,11 @@ import type {
   ImageSource, 
   ImageSourceInput,
   StorageConfig,
-  LoadImageResult,
   UploadProgress,
-  StorageFlowResult
+  StorageFlowResult,
+  TransferResult
 } from '@ipfsnut/evermark-sdk-core';
-import type { ImageLoaderOptions } from './image-loader.js';
+import type { ImageLoaderOptions, LoadImageResult } from './image-loader.js';
 
 export interface EnhancedImageLoaderOptions extends ImageLoaderOptions {
   /** Storage configuration for auto-transfer functionality */
@@ -39,7 +39,10 @@ export class EnhancedImageLoader extends ImageLoader {
     super(baseOptions);
     
     this.autoTransfer = autoTransfer;
-    this.onStorageProgress = onStorageProgress;
+    // Fix TypeScript strict mode issue - only assign if defined
+    if (onStorageProgress) {
+      this.onStorageProgress = onStorageProgress;
+    }
     
     if (storageConfig) {
       this.orchestrator = new StorageOrchestrator(storageConfig);
@@ -50,7 +53,7 @@ export class EnhancedImageLoader extends ImageLoader {
    * Load image with automatic storage flow integration
    * This is your main entry point that implements the 3-step process
    */
-  async loadImageWithStorageFlow(input: ImageSourceInput): Promise<LoadImageResult> {
+  async loadImageWithStorageFlow(input: ImageSourceInput): Promise<LoadImageResult & { transferResult?: TransferResult }> {
     try {
       // If we have storage orchestration enabled, run the flow first
       if (this.orchestrator && this.autoTransfer) {
@@ -78,10 +81,16 @@ export class EnhancedImageLoader extends ImageLoader {
 
         console.log(`✅ Image loading complete: ${loadResult.success ? 'success' : 'failed'}`);
 
-        return {
-          ...loadResult,
-          transferResult: flowResult.transferResult
+        // Return result with optional transferResult
+        const result: LoadImageResult & { transferResult?: TransferResult } = {
+          ...loadResult
         };
+        
+        if (flowResult.transferResult) {
+          result.transferResult = flowResult.transferResult;
+        }
+        
+        return result;
       }
 
       // Fallback to normal loading without storage integration

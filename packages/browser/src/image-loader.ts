@@ -4,7 +4,7 @@ import type {
   LoadingState, 
   ImageLoadingError, 
   Result 
-} from '@evermark-sdk/core';
+} from '@ipfsnut/evermark-sdk-core';
 
 export interface ImageLoaderOptions {
   /** Maximum number of retry attempts per source */

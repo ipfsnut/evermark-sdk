@@ -10,12 +10,20 @@ export { ImageLoader } from './image-loader.js';
 export { CORSHandler } from './cors-handler.js';
 export { CacheManager } from './cache-manager.js';
 export { PerformanceMonitor } from './performance.js';
+export { EnhancedImageLoader } from './enhanced-image-loader.js';
 
-// Existing types
+// =================
+// TYPE EXPORTS
+// =================
+
 export type {
   ImageLoaderOptions,
   LoadImageResult
 } from './image-loader.js';
+
+export type {
+  EnhancedImageLoaderOptions
+} from './enhanced-image-loader.js';
 
 export type {
   CORSConfig
@@ -32,12 +40,9 @@ export type {
 } from './performance.js';
 
 // =================
-// NEW STORAGE INTEGRATION EXPORTS
+// RE-EXPORTED STORAGE TYPES
 // =================
 
-export { EnhancedImageLoader } from './enhanced-image-loader.js';
-
-// Re-export storage types for convenience
 export type {
   StorageConfig,
   TransferResult,
@@ -47,10 +52,30 @@ export type {
 } from '@ipfsnut/evermark-sdk-core';
 
 // =================
+// IMPORTS FOR FUNCTIONS
+// =================
+
+import { ImageLoader } from './image-loader.js';
+import { EnhancedImageLoader } from './enhanced-image-loader.js';
+import { createDefaultStorageConfig } from '@ipfsnut/evermark-sdk-core';
+import type { 
+  ImageLoaderOptions, 
+  LoadImageResult 
+} from './image-loader.js';
+import type { 
+  EnhancedImageLoaderOptions 
+} from './enhanced-image-loader.js';
+import type {
+  StorageConfig,
+  UploadProgress,
+  ImageSourceInput
+} from '@ipfsnut/evermark-sdk-core';
+
+// =================
 // CONVENIENCE FUNCTIONS
 // =================
 
-export function createImageLoader(options: ImageLoaderOptions = {}) {
+export function createImageLoader(options: ImageLoaderOptions = {}): ImageLoader {
   return new ImageLoader(options);
 }
 
@@ -61,9 +86,8 @@ export function createEnhancedImageLoader(
   supabaseUrl: string,
   supabaseKey: string,
   bucketName: string = 'images',
-  options: Partial<import('./enhanced-image-loader.js').EnhancedImageLoaderOptions> = {}
+  options: Partial<EnhancedImageLoaderOptions> = {}
 ): EnhancedImageLoader {
-  const { createDefaultStorageConfig } = require('@ipfsnut/evermark-sdk-core');
   const storageConfig = createDefaultStorageConfig(supabaseUrl, supabaseKey, bucketName);
   
   return new EnhancedImageLoader({
@@ -88,24 +112,33 @@ export async function ensureImageLoaded(
     debug?: boolean;
   } = {}
 ): Promise<LoadImageResult> {
-  const loader = new EnhancedImageLoader({
+  // Handle strict TypeScript mode - only pass onStorageProgress if defined
+  const loaderOptions: EnhancedImageLoaderOptions = {
     storageConfig,
     autoTransfer: true,
-    onStorageProgress: options.onProgress,
     debug: options.debug || false,
     timeout: 8000,
     maxRetries: 2
-  });
+  };
+  
+  // Only add onStorageProgress if it's defined (strict mode compliance)
+  if (options.onProgress) {
+    loaderOptions.onStorageProgress = options.onProgress;
+  }
+
+  const loader = new EnhancedImageLoader(loaderOptions);
 
   return await loader.loadImageWithStorageFlow(input);
 }
 
-// Default configuration for Supabase
+/**
+ * Default configuration for Supabase
+ */
 export function createSupabaseImageLoader(
   supabaseUrl: string, 
   anonKey: string,
   bucketName: string = 'images'
-) {
+): EnhancedImageLoader {
   return createEnhancedImageLoader(supabaseUrl, anonKey, bucketName, {
     autoTransfer: true,
     debug: false,

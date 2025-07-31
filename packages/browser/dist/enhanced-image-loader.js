@@ -14,7 +14,10 @@ export class EnhancedImageLoader extends ImageLoader {
         super(baseOptions);
         this.orchestrator = null;
         this.autoTransfer = autoTransfer;
-        this.onStorageProgress = onStorageProgress;
+        // Fix TypeScript strict mode issue - only assign if defined
+        if (onStorageProgress) {
+            this.onStorageProgress = onStorageProgress;
+        }
         if (storageConfig) {
             this.orchestrator = new StorageOrchestrator(storageConfig);
         }
@@ -42,10 +45,14 @@ export class EnhancedImageLoader extends ImageLoader {
                 // Load using parent ImageLoader
                 const loadResult = await this.loadImage(sources);
                 console.log(`✅ Image loading complete: ${loadResult.success ? 'success' : 'failed'}`);
-                return {
-                    ...loadResult,
-                    transferResult: flowResult.transferResult
+                // Return result with optional transferResult
+                const result = {
+                    ...loadResult
                 };
+                if (flowResult.transferResult) {
+                    result.transferResult = flowResult.transferResult;
+                }
+                return result;
             }
             // Fallback to normal loading without storage integration
             const sources = resolveImageSources(input);

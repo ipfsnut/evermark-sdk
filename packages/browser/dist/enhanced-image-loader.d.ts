@@ -2,8 +2,8 @@
  * Integrates existing ImageLoader with storage orchestration
  */
 import { ImageLoader } from './image-loader.js';
-import type { ImageSourceInput, StorageConfig, LoadImageResult, UploadProgress, StorageFlowResult } from '@ipfsnut/evermark-sdk-core';
-import type { ImageLoaderOptions } from './image-loader.js';
+import type { ImageSourceInput, StorageConfig, UploadProgress, StorageFlowResult, TransferResult } from '@ipfsnut/evermark-sdk-core';
+import type { ImageLoaderOptions, LoadImageResult } from './image-loader.js';
 export interface EnhancedImageLoaderOptions extends ImageLoaderOptions {
     /** Storage configuration for auto-transfer functionality */
     storageConfig?: StorageConfig;
@@ -25,7 +25,9 @@ export declare class EnhancedImageLoader extends ImageLoader {
      * Load image with automatic storage flow integration
      * This is your main entry point that implements the 3-step process
      */
-    loadImageWithStorageFlow(input: ImageSourceInput): Promise<LoadImageResult>;
+    loadImageWithStorageFlow(input: ImageSourceInput): Promise<LoadImageResult & {
+        transferResult?: TransferResult;
+    }>;
     /**
      * Manual storage flow trigger (without loading)
      */

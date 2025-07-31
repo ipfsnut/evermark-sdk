@@ -1,4 +1,4 @@
-import type { ImageSourceInput, SourceResolutionConfig } from '@evermark-sdk/core';
+import type { ImageSourceInput, SourceResolutionConfig } from '@ipfsnut/evermark-sdk-core';
 export interface UseImageLoaderOptions {
     /** Maximum number of retry attempts per source */
     maxRetries?: number;
