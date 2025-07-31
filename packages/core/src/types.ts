@@ -3,19 +3,15 @@
  * These types are designed to be framework-agnostic and pure
  */
 
-/**
- * Represents a single image source with loading configuration
- */
+// =================
+// EXISTING CORE TYPES (Enhanced)
+// =================
+
 export interface ImageSource {
-  /** The URL to load the image from */
   url: string;
-  /** Type of source for priority and behavior decisions */
   type: 'primary' | 'thumbnail' | 'fallback' | 'placeholder';
-  /** Loading priority (lower numbers load first) */
   priority: number;
-  /** Timeout in milliseconds before giving up on this source */
   timeout?: number;
-  /** Additional metadata for debugging and analytics */
   metadata?: {
     storageProvider?: 'supabase' | 'ipfs' | 'cdn' | 'external';
     size?: 'thumbnail' | 'medium' | 'large' | 'original';
@@ -23,109 +19,137 @@ export interface ImageSource {
   };
 }
 
-/**
- * Input for resolving image sources from various URL types
- */
 export interface ImageSourceInput {
-  /** Primary Supabase Storage URL */
   supabaseUrl?: string;
-  /** Thumbnail version URL */
   thumbnailUrl?: string;
-  /** IPFS hash for decentralized fallback */
   ipfsHash?: string;
-  /** Legacy processed image URL */
   processedUrl?: string;
-  /** External URLs (e.g., from social media) */
   externalUrls?: string[];
-  /** Prefer thumbnail over full resolution */
   preferThumbnail?: boolean;
-  /** Custom IPFS gateway (defaults to Pinata) */
   ipfsGateway?: string;
 }
 
-/**
- * Result of attempting to load a single image source
- */
 export interface LoadAttempt {
-  /** The source that was attempted */
   source: ImageSource;
-  /** When the attempt started */
   startTime: number;
-  /** When the attempt finished (success or failure) */
   endTime?: number;
-  /** Current status of this attempt */
   status: 'pending' | 'success' | 'failed' | 'timeout' | 'aborted';
-  /** Error message if the attempt failed */
   error?: string;
-  /** Additional debug information */
   debug?: {
     networkTime?: number;
     cacheHit?: boolean;
     corsIssue?: boolean;
+    transferTriggered?: boolean;
   };
 }
 
-/**
- * Overall loading state for an image with multiple sources
- */
 export interface LoadingState {
-  /** Currently active source being loaded */
   currentSource: ImageSource | null;
-  /** All attempts made so far */
   attempts: LoadAttempt[];
-  /** Overall loading status */
-  status: 'idle' | 'loading' | 'loaded' | 'failed' | 'aborted';
-  /** Final URL that successfully loaded */
+  status: 'idle' | 'loading' | 'loaded' | 'failed' | 'aborted' | 'transferring';
   finalUrl: string | null;
-  /** Total loading time in milliseconds */
   totalLoadTime?: number;
-  /** Whether this result came from browser cache */
   fromCache?: boolean;
+  transferStatus?: 'pending' | 'in-progress' | 'complete' | 'failed';
 }
 
-/**
- * Configuration for image source resolution behavior
- */
 export interface SourceResolutionConfig {
-  /** Maximum number of sources to attempt */
   maxSources?: number;
-  /** Default timeout for sources without explicit timeout */
   defaultTimeout?: number;
-  /** Whether to include IPFS fallbacks */
   includeIpfs?: boolean;
-  /** Custom IPFS gateway URL */
   ipfsGateway?: string;
-  /** Whether to prioritize thumbnails for mobile */
   mobileOptimization?: boolean;
-  /** Custom priority overrides */
   priorityOverrides?: Record<string, number>;
-  /** Prefer thumbnail over full resolution */
   preferThumbnail?: boolean;
+  storageConfig?: StorageConfig;
+  autoTransfer?: boolean;
 }
 
-/**
- * Events that can be emitted during image loading
- */
+// =================
+// NEW STORAGE TYPES
+// =================
+
+export interface StorageConfig {
+  supabase: {
+    url: string;
+    anonKey: string;
+    bucketName: string;
+    serviceRoleKey?: string;
+  };
+  ipfs: {
+    gateway: string;
+    fallbackGateways?: string[];
+    timeout?: number;
+  };
+  upload: {
+    maxFileSize?: number;
+    allowedFormats?: string[];
+    generateThumbnails?: boolean;
+    thumbnailSize?: { width: number; height: number };
+  };
+}
+
+export interface TransferResult {
+  success: boolean;
+  supabaseUrl?: string;
+  ipfsHash?: string;
+  transferTime?: number;
+  fileSize?: number;
+  error?: string;
+  alreadyExists?: boolean;
+}
+
+export interface UploadProgress {
+  phase: 'preparing' | 'uploading' | 'processing' | 'complete' | 'failed';
+  percentage: number;
+  uploaded?: number;
+  total?: number;
+  message?: string;
+  estimatedTimeRemaining?: number;
+}
+
+export interface StorageFlowResult {
+  finalUrl: string;
+  foundInSupabase: boolean;
+  transferPerformed: boolean;
+  transferResult?: TransferResult;
+  totalTime: number;
+  warnings?: string[];
+}
+
+export interface ImageSourceInputWithStorage extends ImageSourceInput {
+  forceTransfer?: boolean;
+  storageConfig?: Partial<StorageConfig>;
+  onProgress?: (progress: UploadProgress) => void;
+  onTransferComplete?: (result: TransferResult) => void;
+}
+
+// =================
+// ENHANCED EVENT TYPES
+// =================
+
 export type ImageLoadingEvent =
   | { type: 'source_attempt_start'; source: ImageSource }
   | { type: 'source_attempt_success'; source: ImageSource; url: string }
   | { type: 'source_attempt_failed'; source: ImageSource; error: string }
+  | { type: 'transfer_started'; ipfsHash: string; targetBucket: string }
+  | { type: 'transfer_progress'; progress: UploadProgress }
+  | { type: 'transfer_complete'; result: TransferResult }
+  | { type: 'transfer_failed'; ipfsHash: string; error: string }
   | { type: 'all_sources_failed'; attempts: LoadAttempt[] }
   | { type: 'loading_complete'; finalUrl: string; totalTime: number }
   | { type: 'loading_aborted'; reason: string };
 
-/**
- * Callback function for handling loading events
- */
 export type ImageLoadingEventHandler = (event: ImageLoadingEvent) => void;
 
-/**
- * Error types specific to image loading
- */
+// =================
+// ERROR TYPES
+// =================
+
 export class ImageLoadingError extends Error {
   constructor(
     message: string,
-    public readonly code: 'TIMEOUT' | 'NETWORK' | 'CORS' | 'NOT_FOUND' | 'INVALID_URL' | 'ABORTED',
+    public readonly code: 'TIMEOUT' | 'NETWORK' | 'CORS' | 'NOT_FOUND' | 'INVALID_URL' | 'ABORTED' | 'STORAGE_ERROR' | 'TRANSFER_FAILED',
     public readonly source?: ImageSource
   ) {
     super(message);
@@ -133,47 +157,49 @@ export class ImageLoadingError extends Error {
   }
 }
 
-/**
- * Result type for functions that may succeed or fail
- */
+export class StorageError extends Error {
+  constructor(
+    message: string,
+    public readonly code: 'SUPABASE_ERROR' | 'IPFS_ERROR' | 'TRANSFER_ERROR' | 'UPLOAD_ERROR' | 'CONFIG_ERROR',
+    public readonly provider: 'supabase' | 'ipfs' | 'unknown' = 'unknown'
+  ) {
+    super(message);
+    this.name = 'StorageError';
+  }
+}
+
+// =================
+// UTILITY TYPES
+// =================
+
 export type Result<T, E = Error> = 
   | { success: true; data: T }
   | { success: false; error: E };
 
-/**
- * Utility type for functions that resolve image sources
- */
 export type SourceResolver = (input: ImageSourceInput, config?: SourceResolutionConfig) => ImageSource[];
 
-/**
- * Utility type for functions that load individual image sources
- */
 export type SourceLoader = (
   source: ImageSource, 
   signal?: AbortSignal
 ) => Promise<Result<string, ImageLoadingError>>;
 
-/**
- * Options for image loader instances
- */
+export type StorageTransferFunction = (
+  ipfsHash: string,
+  config: StorageConfig,
+  onProgress?: (progress: UploadProgress) => void
+) => Promise<TransferResult>;
+
 export interface ImageLoaderOptions {
-  /** Maximum number of retry attempts per source */
   maxRetries?: number;
-  /** Timeout for each load attempt in milliseconds */
   timeout?: number;
-  /** Whether to use CORS mode */
   useCORS?: boolean;
-  /** Custom headers for requests */
   headers?: Record<string, string>;
-  /** Progress callback */
   onProgress?: (loaded: number, total: number) => void;
-  /** Debug mode for detailed logging */
   debug?: boolean;
+  storageConfig?: StorageConfig;
+  autoTransfer?: boolean;
 }
 
-/**
- * Result of image loading operation
- */
 export interface LoadImageResult {
   success: boolean;
   imageUrl?: string;
@@ -182,4 +208,5 @@ export interface LoadImageResult {
   fromCache?: boolean;
   error?: string;
   attempts?: LoadAttempt[];
+  transferResult?: TransferResult;
 }

@@ -1,7 +1,7 @@
 {
   "name": "@ipfsnut/evermark-sdk-browser",
   "version": "0.1.0",
-  "description": "Browser-specific image loading with CORS and caching",
+  "description": "Browser-specific image loading with CORS, caching, and storage integration",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,16 +14,38 @@
   "files": [
     "dist/**/*"
   ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:watch": "vitest --watch", 
+    "test:coverage": "vitest --coverage",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test:integration": "vitest --run integration.test.ts"
+  },
   "dependencies": {
-    "@ipfsnut/evermark-sdk-core": "^0.1.0"
+    "@ipfsnut/evermark-sdk-core": "^0.1.0",
+    "@ipfsnut/evermark-sdk-storage": "^0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^1.3.0",
+    "@vitest/coverage-v8": "^1.3.0"
   },
   "keywords": [
     "image",
     "browser",
     "cors",
     "cache",
-    "performance"
+    "performance",
+    "integration"
   ],
   "author": "ipfsnut",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ipfsnut/evermark-sdk.git",
+    "directory": "packages/browser"
+  }
 }

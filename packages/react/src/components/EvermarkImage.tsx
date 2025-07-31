@@ -1,6 +1,12 @@
-import React from 'react';
+/**
+ * Enhanced EvermarkImage component with storage flow integration
+ * This replaces your existing EvermarkImage.tsx file
+ */
+
+import React, { useState, useEffect } from 'react';
 import { ImageDisplay } from './ImageDisplay.js';
-import type { ImageSourceInput } from '@evermark-sdk/core';
+import { ImageTransferStatus } from './ImageTransferStatus.js';
+import type { ImageSourceInput, StorageConfig } from '@evermark-sdk/core';
 
 interface EvermarkImageProps {
   /** Evermark data */
@@ -15,50 +21,67 @@ interface EvermarkImageProps {
     ipfsHash?: string;
     imageStatus?: 'processed' | 'processing' | 'failed' | 'none';
   };
+  /** Storage configuration for transfer operations */
+  storageConfig?: StorageConfig;
   /** Display variant */
   variant?: 'hero' | 'standard' | 'compact' | 'list';
   /** Show placeholder when no image */
   showPlaceholder?: boolean;
+  /** Enable automatic IPFS→Supabase transfer */
+  enableAutoTransfer?: boolean;
+  /** Show transfer status overlay */
+  showTransferStatus?: boolean;
   /** Additional CSS classes */
   className?: string;
   /** Callback when image loads */
   onImageLoad?: () => void;
   /** Callback when image fails */
   onImageError?: (error: string) => void;
+  /** Callback when transfer completes */
+  onTransferComplete?: (result: { supabaseUrl: string }) => void;
 }
 
 /**
- * Enhanced EvermarkImage component using the SDK
- * This is a drop-in replacement for your existing component
+ * Enhanced EvermarkImage component using the SDK with storage integration
+ * Backward compatible - works with or without storageConfig
  */
 export const EvermarkImage: React.FC<EvermarkImageProps> = ({
   evermark,
+  storageConfig,
   variant = 'standard',
   showPlaceholder = true,
+  enableAutoTransfer = true,
+  showTransferStatus = true,
   className = '',
   onImageLoad,
-  onImageError
+  onImageError,
+  onTransferComplete
 }) => {
+  const [currentSupabaseUrl, setCurrentSupabaseUrl] = useState(evermark.supabaseImageUrl);
+  const [transferInProgress, setTransferInProgress] = useState(false);
+
   // Convert evermark data to ImageSourceInput
-  const sources: ImageSourceInput = {};
-  
-  if (evermark.supabaseImageUrl) {
-    sources.supabaseUrl = evermark.supabaseImageUrl;
-  }
-  if (evermark.thumbnailUrl) {
-    sources.thumbnailUrl = evermark.thumbnailUrl;
-  }
-  if (evermark.processed_image_url) {
-    sources.processedUrl = evermark.processed_image_url;
-  }
-  if (evermark.ipfsHash) {
-    sources.ipfsHash = evermark.ipfsHash;
-  }
-  
-  const preferThumbnail = variant === 'compact' || variant === 'list';
-  if (preferThumbnail) {
-    sources.preferThumbnail = true;
-  }
+  const sources: ImageSourceInput = {
+    supabaseUrl: currentSupabaseUrl,
+    thumbnailUrl: evermark.thumbnailUrl,
+    processedUrl: evermark.processed_image_url,
+    ipfsHash: evermark.ipfsHash,
+    preferThumbnail: variant === 'compact' || variant === 'list'
+  };
+
+  // Only show transfer if storage config is provided and conditions are met
+  const shouldShowTransfer = storageConfig &&
+    enableAutoTransfer && 
+    showTransferStatus &&
+    !currentSupabaseUrl && 
+    evermark.ipfsHash &&
+    !transferInProgress;
+
+  const handleTransferComplete = (result: { supabaseUrl: string }) => {
+    setCurrentSupabaseUrl(result.supabaseUrl);
+    setTransferInProgress(false);
+    onTransferComplete?.(result);
+  };
 
   // Variant-specific styles
   const getVariantStyles = () => {
@@ -118,19 +141,20 @@ export const EvermarkImage: React.FC<EvermarkImageProps> = ({
   );
 
   // Resolution config
-  const resolutionConfig: { preferThumbnail?: boolean; maxSources: number } = { maxSources: 3 };
-  if (preferThumbnail) {
-    resolutionConfig.preferThumbnail = true;
-  }
+  const resolutionConfig = { 
+    preferThumbnail: variant === 'compact' || variant === 'list',
+    maxSources: 3 
+  };
 
   // Loader options
   const loaderOptions = {
-    debug: process.env.NODE_ENV === 'development',
+    debug: false,
     timeout: variant === 'list' ? 5000 : 8000
   };
 
   return (
     <div className={`${getVariantStyles()} ${className} group cursor-pointer hover:scale-105 transition-transform`}>
+      {/* Main Image Display */}
       <ImageDisplay
         sources={sources}
         alt={evermark.title}
@@ -143,12 +167,35 @@ export const EvermarkImage: React.FC<EvermarkImageProps> = ({
         loaderOptions={loaderOptions}
       />
 
+      {/* Transfer Status Overlay - Only shows if storage config provided */}
+      {shouldShowTransfer && evermark.ipfsHash && storageConfig && (
+        <div className="absolute top-2 left-2 bg-black/80 text-white text-xs p-2 rounded backdrop-blur-sm">
+          <ImageTransferStatus
+            ipfsHash={evermark.ipfsHash}
+            storageConfig={storageConfig}
+            onTransferComplete={handleTransferComplete}
+            onTransferError={onImageError}
+            autoStart={enableAutoTransfer}
+          />
+        </div>
+      )}
+
       {/* Status indicators */}
       {evermark.imageStatus === 'processing' && (
         <div className="absolute bottom-2 left-2 bg-black/80 text-xs px-2 py-1 rounded backdrop-blur-sm">
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
             <span className="text-blue-400">Processing</span>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer Status Badge */}
+      {transferInProgress && (
+        <div className="absolute top-2 right-2 bg-blue-500/90 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            <span>Transferring</span>
           </div>
         </div>
       )}

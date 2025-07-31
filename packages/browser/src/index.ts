@@ -1,40 +1,115 @@
-import { ImageLoader } from './image-loader.js';
-import { CORSHandler } from './cors-handler.js';
-import { CacheManager } from './cache-manager.js';
-import { PerformanceMonitor } from './performance.js';
-import type { ImageLoaderOptions, LoadImageResult } from './image-loader.js';
-import type { CORSConfig } from './cors-handler.js';
-import type { CacheEntry, CacheConfig } from './cache-manager.js';
-import type { LoadMetrics, PerformanceStats } from './performance.js';
+/**
+ * Clean exports including storage integration
+ */
 
-// Re-export everything
-export { ImageLoader, CORSHandler, CacheManager, PerformanceMonitor };
+// =================
+// EXISTING EXPORTS (Maintained)
+// =================
 
+export { ImageLoader } from './image-loader.js';
+export { CORSHandler } from './cors-handler.js';
+export { CacheManager } from './cache-manager.js';
+export { PerformanceMonitor } from './performance.js';
+
+// Existing types
 export type {
   ImageLoaderOptions,
-  LoadImageResult,
-  CORSConfig,
+  LoadImageResult
+} from './image-loader.js';
+
+export type {
+  CORSConfig
+} from './cors-handler.js';
+
+export type {
   CacheEntry,
-  CacheConfig,
+  CacheConfig
+} from './cache-manager.js';
+
+export type {
   LoadMetrics,
   PerformanceStats
-};
+} from './performance.js';
 
-// Convenience function for quick setup
+// =================
+// NEW STORAGE INTEGRATION EXPORTS
+// =================
+
+export { EnhancedImageLoader } from './enhanced-image-loader.js';
+
+// Re-export storage types for convenience
+export type {
+  StorageConfig,
+  TransferResult,
+  UploadProgress,
+  StorageFlowResult,
+  ImageSourceInput
+} from '@evermark-sdk/core';
+
+// =================
+// CONVENIENCE FUNCTIONS
+// =================
+
 export function createImageLoader(options: ImageLoaderOptions = {}) {
   return new ImageLoader(options);
 }
 
-// Default browser configuration for Supabase
-export function createSupabaseImageLoader(supabaseUrl: string, anonKey: string) {
-  const corsHandler = new CORSHandler({
-    supabaseUrl,
-    supabaseAnonKey: anonKey
+/**
+ * Create enhanced image loader with sensible defaults
+ */
+export function createEnhancedImageLoader(
+  supabaseUrl: string,
+  supabaseKey: string,
+  bucketName: string = 'images',
+  options: Partial<import('./enhanced-image-loader.js').EnhancedImageLoaderOptions> = {}
+): EnhancedImageLoader {
+  const { createDefaultStorageConfig } = require('@evermark-sdk/core');
+  const storageConfig = createDefaultStorageConfig(supabaseUrl, supabaseKey, bucketName);
+  
+  return new EnhancedImageLoader({
+    debug: false,
+    timeout: 8000,
+    maxRetries: 2,
+    autoTransfer: true,
+    storageConfig,
+    ...options
+  });
+}
+
+/**
+ * Main function implementing your 3-step flow
+ * This is the primary entry point for your use case
+ */
+export async function ensureImageLoaded(
+  input: ImageSourceInput,
+  storageConfig: StorageConfig,
+  options: {
+    onProgress?: (progress: UploadProgress) => void;
+    debug?: boolean;
+  } = {}
+): Promise<LoadImageResult> {
+  const loader = new EnhancedImageLoader({
+    storageConfig,
+    autoTransfer: true,
+    onStorageProgress: options.onProgress,
+    debug: options.debug || false,
+    timeout: 8000,
+    maxRetries: 2
   });
 
-  return new ImageLoader({
+  return await loader.loadImageWithStorageFlow(input);
+}
+
+// Default configuration for Supabase
+export function createSupabaseImageLoader(
+  supabaseUrl: string, 
+  anonKey: string,
+  bucketName: string = 'images'
+) {
+  return createEnhancedImageLoader(supabaseUrl, anonKey, bucketName, {
+    autoTransfer: true,
+    debug: false,
     useCORS: true,
-    debug: false, // Remove the env check - can be overridden by user
     timeout: 8000,
     maxRetries: 2
   });
