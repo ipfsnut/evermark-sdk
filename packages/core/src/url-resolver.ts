@@ -20,7 +20,9 @@ const DEFAULT_CONFIG: Required<SourceResolutionConfig> = {
   ipfsGateway: 'https://gateway.pinata.cloud/ipfs',
   mobileOptimization: false,
   priorityOverrides: {},
-  preferThumbnail: false  // ← ADD THIS MISSING PROPERTY
+  preferThumbnail: false,
+  storageConfig: undefined as any, // Will be overridden when provided
+  autoTransfer: false
 };
 
 /**

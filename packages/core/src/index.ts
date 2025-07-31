@@ -40,7 +40,7 @@ export type {
 export { ImageLoadingError, StorageError } from './types.js';
 
 // =================
-// URL RESOLUTION EXPORTS (Existing)
+// URL RESOLUTION EXPORTS
 // =================
 
 export {
@@ -52,7 +52,7 @@ export {
 } from './url-resolver.js';
 
 // =================
-// STORAGE UTILITY EXPORTS (New)
+// STORAGE UTILITY EXPORTS
 // =================
 
 export {
@@ -66,6 +66,18 @@ export {
   extractFileExtension,
   isImageFile
 } from './storage-utils.js';
+
+// =================
+// UTILITY FACTORIES
+// =================
+
+export {
+  createSourceResolver,
+  createMobileOptimizedResolver,
+  createStorageAwareResolver,
+  createFastNetworkResolver,
+  createSlowNetworkResolver
+} from './utility-factories.js';
 
 // =================
 // PACKAGE METADATA
@@ -94,44 +106,3 @@ export const TIMEOUTS = {
   fallback: 8000,
   placeholder: 1000
 } as const;
-
-// =================
-// UTILITY FACTORIES
-// =================
-
-export function createSourceResolver(config: Partial<SourceResolutionConfig>) {
-  return (input: ImageSourceInput) => resolveImageSources(input, config);
-}
-
-export function createMobileOptimizedResolver() {
-  return createSourceResolver({
-    mobileOptimization: true,
-    maxSources: 3,
-    defaultTimeout: 5000
-  });
-}
-
-export function createStorageAwareResolver(storageConfig: StorageConfig) {
-  return createSourceResolver({
-    storageConfig,
-    autoTransfer: true,
-    includeIpfs: true
-  });
-}
-
-export function createFastNetworkResolver() {
-  return createSourceResolver({
-    includeIpfs: true,
-    maxSources: 5,
-    defaultTimeout: 10000
-  });
-}
-
-export function createSlowNetworkResolver() {
-  return createSourceResolver({
-    includeIpfs: false,
-    maxSources: 2,
-    defaultTimeout: 3000,
-    mobileOptimization: true
-  });
-}

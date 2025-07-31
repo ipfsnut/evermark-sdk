@@ -12,7 +12,9 @@ const DEFAULT_CONFIG = {
     ipfsGateway: 'https://gateway.pinata.cloud/ipfs',
     mobileOptimization: false,
     priorityOverrides: {},
-    preferThumbnail: false // ← ADD THIS MISSING PROPERTY
+    preferThumbnail: false,
+    storageConfig: undefined, // Will be overridden when provided
+    autoTransfer: false
 };
 /**
  * Default timeouts by source type (in milliseconds)

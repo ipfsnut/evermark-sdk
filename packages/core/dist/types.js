@@ -2,9 +2,9 @@
  * Core types for the Evermark SDK image handling system
  * These types are designed to be framework-agnostic and pure
  */
-/**
- * Error types specific to image loading
- */
+// =================
+// ERROR TYPES
+// =================
 export class ImageLoadingError extends Error {
     code;
     source;
@@ -13,6 +13,16 @@ export class ImageLoadingError extends Error {
         this.code = code;
         this.source = source;
         this.name = 'ImageLoadingError';
+    }
+}
+export class StorageError extends Error {
+    code;
+    provider;
+    constructor(message, code, provider = 'unknown') {
+        super(message);
+        this.code = code;
+        this.provider = provider;
+        this.name = 'StorageError';
     }
 }
 //# sourceMappingURL=types.js.map
