@@ -2,12 +2,16 @@
  * Complete Supabase Storage operations
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import pkg from '@supabase/supabase-js';
+const { createClient } = pkg;
 import type { 
   StorageConfig, 
   TransferResult, 
   UploadProgress
 } from '@ipfsnut/evermark-sdk-core';
+
+// Type the SupabaseClient manually since we can't import the type
+type SupabaseClient = any;
 
 export interface SupabaseUploadOptions {
   path?: string;

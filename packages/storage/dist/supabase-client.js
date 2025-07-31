@@ -1,7 +1,8 @@
 /**
  * Complete Supabase Storage operations
  */
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import pkg from '@supabase/supabase-js';
+const { createClient } = pkg;
 export class SupabaseStorageClient {
     config;
     client;
