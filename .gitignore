@@ -1,7 +1,11 @@
 node_modules
 .node_modules
 build
-/dist
+
+dist/           # Ignores any dist folder anywhere
+packages/*/dist/ # Explicitly ignores package dist folders
+*.tsbuildinfo   # Ignores TypeScript build cache
+
 goals.txt
 pnpm-lock.yaml
 package-lock.json

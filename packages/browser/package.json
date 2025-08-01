@@ -1,6 +1,6 @@
 {
   "name": "@ipfsnut/evermark-sdk-browser",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "Browser-specific image loading with CORS, caching, and storage integration",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,7 +20,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest",
-    "test:watch": "vitest --watch", 
+    "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",

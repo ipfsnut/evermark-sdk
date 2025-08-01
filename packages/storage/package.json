@@ -1,6 +1,6 @@
 {
   "name": "@ipfsnut/evermark-sdk-storage",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "Storage orchestration for Supabase and IPFS operations",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch", 
+    "dev": "tsc --watch",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
@@ -41,7 +41,7 @@
   },
   "keywords": [
     "storage",
-    "supabase", 
+    "supabase",
     "ipfs",
     "image",
     "upload",

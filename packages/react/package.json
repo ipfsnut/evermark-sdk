@@ -1,6 +1,6 @@
 {
   "name": "@ipfsnut/evermark-sdk-react",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "React components and hooks for image loading with storage orchestration",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,7 +21,7 @@
     "dev": "tsc --watch",
     "test": "vitest",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage", 
+    "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
     "test:components": "vitest --run components.test.tsx",
