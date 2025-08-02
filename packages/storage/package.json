@@ -1,6 +1,6 @@
 {
   "name": "@ipfsnut/evermark-sdk-storage",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "Storage orchestration for Supabase and IPFS operations",
   "type": "module",
   "main": "./dist/index.js",
@@ -29,7 +29,7 @@
     "test:ipfs": "vitest --run ipfs.test.ts"
   },
   "dependencies": {
-    "@ipfsnut/evermark-sdk-core": "workspace:*",
+    "@ipfsnut/evermark-sdk-core": "^1.1.1",
     "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {

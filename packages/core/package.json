@@ -1,6 +1,6 @@
 {
   "name": "@ipfsnut/evermark-sdk-core",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "Core image handling logic with pure functions and enhanced storage types",
   "type": "module",
   "main": "./dist/index.js",
