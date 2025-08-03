@@ -9,8 +9,8 @@ export { ImageLoadingError, StorageError } from './types.js';
 export { resolveImageSources, createIpfsUrl, createPlaceholderSource, filterSourcesByCondition, validateImageSources } from './url-resolver.js';
 export { isValidUrl, isValidIpfsHash, isValidSupabaseUrl, extractSupabaseProjectId, generateStoragePath, createDefaultStorageConfig, validateStorageConfig, extractFileExtension, isImageFile } from './storage-utils.js';
 export { createSourceResolver, createMobileOptimizedResolver, createStorageAwareResolver, createFastNetworkResolver, createSlowNetworkResolver } from './utility-factories.js';
-export declare const PACKAGE_VERSION = "0.1.0";
-export declare const PACKAGE_NAME = "@evermark-sdk/core";
+export declare const PACKAGE_VERSION = "1.1.1";
+export declare const PACKAGE_NAME = "@ipfsnut/evermark-sdk-core";
 export declare const DEFAULT_CONFIG: {
     readonly maxSources: 5;
     readonly defaultTimeout: 8000;

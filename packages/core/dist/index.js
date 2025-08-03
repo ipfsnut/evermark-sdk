@@ -23,8 +23,8 @@ export { createSourceResolver, createMobileOptimizedResolver, createStorageAware
 // =================
 // PACKAGE METADATA
 // =================
-export const PACKAGE_VERSION = '0.1.0';
-export const PACKAGE_NAME = '@evermark-sdk/core';
+export const PACKAGE_VERSION = '1.1.1';
+export const PACKAGE_NAME = '@ipfsnut/evermark-sdk-core';
 // =================
 // DEFAULT CONFIGURATIONS
 // =================
