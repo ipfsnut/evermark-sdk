@@ -1,0 +1,4 @@
+# .pnpmrc file in project root
+auto-install-peers=true
+dedupe-peer-dependents=false
+hoist-pattern[]=*@types*

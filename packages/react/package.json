@@ -1,7 +1,7 @@
 {
   "name": "@ipfsnut/evermark-sdk-react",
   "version": "1.1.1",
-  "description": "React components and hooks for image loading with storage orchestration",
+  "description": "React components and hooks for Evermark SDK",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -23,36 +23,32 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf dist",
-    "test:components": "vitest --run components.test.tsx",
-    "test:hooks": "vitest --run hooks.test.ts"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@ipfsnut/evermark-sdk-core": "^1.1.1",
-    "@ipfsnut/evermark-sdk-storage": "^1.1.1",
-    "@ipfsnut/evermark-sdk-browser": "^1.1.1"
+    "@ipfsnut/evermark-sdk-browser": "^1.1.1",
+    "@ipfsnut/evermark-sdk-storage": "^1.1.1"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
-    "vitest": "^1.3.0",
-    "@vitest/coverage-v8": "^1.3.0",
-    "@types/react": "^18.2.55",
-    "@types/react-dom": "^18.2.19",
-    "@testing-library/react": "^14.2.1",
-    "@testing-library/jest-dom": "^6.4.2"
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.9",
+    "@vitest/coverage-v8": "^2.1.9",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
   "keywords": [
     "react",
-    "image",
-    "components",
     "hooks",
-    "storage",
-    "upload",
-    "ui",
+    "components",
+    "image",
+    "loading",
     "evermark",
     "blockchain",
     "web3"

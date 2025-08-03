@@ -32,7 +32,7 @@ export function useImageLoader(input, options = {}) {
         performanceRef.current = new PerformanceMonitor();
         // Initialize image loader
         loaderRef.current = new ImageLoader({
-            debug: process.env.NODE_ENV === 'development',
+            debug: false,
             timeout: 8000,
             maxRetries: 2,
             ...loaderOptions

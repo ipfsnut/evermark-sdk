@@ -100,7 +100,7 @@ export function useImageLoader(
 
     // Initialize image loader
     loaderRef.current = new ImageLoader({
-      debug: process.env.NODE_ENV === 'development',
+      debug: false,
       timeout: 8000,
       maxRetries: 2,
       ...loaderOptions
