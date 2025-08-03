@@ -12,6 +12,19 @@ export interface ImageLoaderOptions {
     onProgress?: (loaded: number, total: number) => void;
     /** Debug mode for detailed logging */
     debug?: boolean;
+    /** Cache configuration */
+    cache?: {
+        enabled?: boolean;
+        maxSize?: number;
+        maxEntries?: number;
+        ttl?: number;
+        persistent?: boolean;
+    };
+    /** Performance monitoring */
+    monitoring?: {
+        enabled?: boolean;
+        maxMetrics?: number;
+    };
 }
 export interface LoadImageResult {
     success: boolean;
@@ -28,8 +41,8 @@ export interface LoadImageResult {
 export declare class ImageLoader {
     private options;
     private abortController;
-    private cache;
-    private readonly cacheTimeout;
+    private cacheManager;
+    private performanceMonitor?;
     constructor(options?: ImageLoaderOptions);
     /**
      * Load image from multiple sources with intelligent fallback
@@ -48,10 +61,6 @@ export declare class ImageLoader {
      */
     private isFromCache;
     /**
-     * Update cache with successful URL
-     */
-    private updateCache;
-    /**
      * Abort current loading operation
      */
     abort(): void;
@@ -64,8 +73,15 @@ export declare class ImageLoader {
      */
     getCacheStats(): {
         size: number;
-        urls: string[];
+        entries: number;
+        totalSize: number;
+        hitRate: number;
+        averageLoadTime: number;
     };
+    /**
+     * Get performance stats
+     */
+    getPerformanceStats(): import("./performance.js").PerformanceStats | undefined;
     /**
      * Cleanup resources
      */

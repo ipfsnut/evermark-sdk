@@ -2,6 +2,7 @@
  * Handles CORS issues specifically for Supabase Storage
  */
 export class CORSHandler {
+    config;
     constructor(config = {}) {
         this.config = {
             allowedOrigins: ['*'],

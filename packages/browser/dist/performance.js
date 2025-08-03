@@ -2,10 +2,8 @@
  * Collects and analyzes performance metrics for image loading
  */
 export class PerformanceMonitor {
-    constructor() {
-        this.metrics = [];
-        this.maxMetrics = 1000;
-    }
+    metrics = [];
+    maxMetrics = 1000;
     /**
      * Record a load attempt
      */

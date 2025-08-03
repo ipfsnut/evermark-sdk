@@ -5,6 +5,8 @@ import type {
   ImageLoadingError, 
   Result 
 } from '@ipfsnut/evermark-sdk-core';
+import { CacheManager, type CacheConfig, type CacheEntry } from './cache-manager.js';
+import { PerformanceMonitor } from './performance.js';
 
 export interface ImageLoaderOptions {
   /** Maximum number of retry attempts per source */
@@ -19,6 +21,19 @@ export interface ImageLoaderOptions {
   onProgress?: (loaded: number, total: number) => void;
   /** Debug mode for detailed logging */
   debug?: boolean;
+  /** Cache configuration */
+  cache?: {
+    enabled?: boolean;
+    maxSize?: number;
+    maxEntries?: number;
+    ttl?: number;
+    persistent?: boolean;
+  };
+  /** Performance monitoring */
+  monitoring?: {
+    enabled?: boolean;
+    maxMetrics?: number;
+  };
 }
 
 export interface LoadImageResult {
@@ -36,8 +51,8 @@ export interface LoadImageResult {
  */
 export class ImageLoader {
   private abortController: AbortController | null = null;
-  private cache = new Map<string, { url: string; timestamp: number }>();
-  private readonly cacheTimeout = 5 * 60 * 1000; // 5 minutes
+  private cacheManager: CacheManager;
+  private performanceMonitor?: PerformanceMonitor;
 
   constructor(private options: ImageLoaderOptions = {}) {
     this.options = {
@@ -45,8 +60,37 @@ export class ImageLoader {
       timeout: 8000,
       useCORS: true,
       debug: false,
+      cache: { enabled: true },
+      monitoring: { enabled: false },
       ...options
     };
+
+    // Build cache config properly for exactOptionalPropertyTypes
+    const cacheConfig: CacheConfig = {};
+    
+    if (this.options.cache?.maxSize !== undefined) {
+      cacheConfig.maxSize = this.options.cache.maxSize;
+    }
+    
+    if (this.options.cache?.maxEntries !== undefined) {
+      cacheConfig.maxEntries = this.options.cache.maxEntries;
+    }
+    
+    if (this.options.cache?.ttl !== undefined) {
+      cacheConfig.ttl = this.options.cache.ttl;
+    }
+    
+    if (this.options.cache?.persistent !== undefined) {
+      cacheConfig.persistent = this.options.cache.persistent;
+    }
+
+    // Initialize cache manager with properly constructed config
+    this.cacheManager = new CacheManager(cacheConfig);
+
+    // Initialize performance monitor if enabled
+    if (this.options.monitoring?.enabled) {
+      this.performanceMonitor = new PerformanceMonitor();
+    }
   }
 
   /**
@@ -83,6 +127,20 @@ export class ImageLoader {
           
           this.log(`✅ Image loaded successfully from ${source.metadata?.storageProvider} in ${loadTime}ms`);
           
+          // Record performance metrics
+          if (this.performanceMonitor) {
+            this.performanceMonitor.recordLoad({
+              url: source.url,
+              source: source.metadata?.storageProvider || 'unknown',
+              startTime,
+              endTime: Date.now(),
+              loadTime,
+              fromCache,
+              success: true,
+              retryCount: attempts.length - 1
+            });
+          }
+
           return {
             success: true,
             imageUrl: source.url,
@@ -99,6 +157,24 @@ export class ImageLoader {
       // All sources failed
       const totalTime = Date.now() - startTime;
       this.log(`💥 All ${sources.length} sources failed after ${totalTime}ms`);
+
+      // Record failure metrics
+      if (this.performanceMonitor && sources.length > 0) {
+        const firstSource = sources[0];
+        if (firstSource) {
+          this.performanceMonitor.recordLoad({
+            url: firstSource.url,
+            source: firstSource.metadata?.storageProvider || 'unknown',
+            startTime,
+            endTime: Date.now(),
+            loadTime: totalTime,
+            fromCache: false,
+            success: false,
+            error: `Failed to load from ${sources.length} sources`,
+            retryCount: attempts.length
+          });
+        }
+      }
 
       return {
         success: false,
@@ -130,10 +206,11 @@ export class ImageLoader {
 
     try {
       // Check cache first
-      if (this.isFromCache(source.url)) {
+      if (this.options.cache?.enabled && this.cacheManager.has(source.url)) {
         attempt.endTime = Date.now();
         attempt.status = 'success';
         attempt.debug = { networkTime: 0, cacheHit: true };
+        this.log(`💾 Cache hit for ${source.url}`);
         return attempt;
       }
 
@@ -150,8 +227,50 @@ export class ImageLoader {
         try {
           await this.loadWithTimeout(source.url, source.timeout || this.options.timeout!);
           
-          // Success - update cache
-          this.updateCache(source.url);
+          // Success - update cache with proper CacheEntry type
+          if (this.options.cache?.enabled) {
+            // Create a proper CacheEntry with required fields
+            const cacheEntry: Partial<CacheEntry> = {
+              url: source.url,
+              timestamp: Date.now(),
+              loadTime: Date.now() - startTime,
+              accessCount: 1,
+              lastAccessed: Date.now()
+            };
+            
+            // Add optional properties if available
+            if (source.metadata?.format) {
+              const formatToMimeType: Record<string, string> = {
+                'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg',
+                'png': 'image/png',
+                'gif': 'image/gif',
+                'webp': 'image/webp',
+                'svg': 'image/svg+xml'
+              };
+              
+              const mimeType = formatToMimeType[source.metadata.format];
+              if (mimeType) {
+                cacheEntry.mimeType = mimeType;
+              }
+            }
+            
+            // Estimate size if not available (rough estimate based on format)
+            if (!cacheEntry.size && source.metadata?.format) {
+              const estimatedSizes: Record<string, number> = {
+                'jpg': 100000,   // ~100KB average
+                'jpeg': 100000,
+                'png': 200000,   // ~200KB average
+                'gif': 150000,   // ~150KB average
+                'webp': 80000,   // ~80KB average
+                'svg': 10000     // ~10KB average
+              };
+              
+              cacheEntry.size = estimatedSizes[source.metadata.format] || 100000;
+            }
+            
+            this.cacheManager.set(source.url, cacheEntry);
+          }
           
           attempt.endTime = Date.now();
           attempt.status = 'success';
@@ -247,26 +366,7 @@ export class ImageLoader {
    * Check if URL is in cache and still valid
    */
   private isFromCache(url: string): boolean {
-    const cached = this.cache.get(url);
-    if (!cached) return false;
-    
-    const age = Date.now() - cached.timestamp;
-    if (age > this.cacheTimeout) {
-      this.cache.delete(url);
-      return false;
-    }
-    
-    return true;
-  }
-
-  /**
-   * Update cache with successful URL
-   */
-  private updateCache(url: string): void {
-    this.cache.set(url, {
-      url,
-      timestamp: Date.now()
-    });
+    return this.options.cache?.enabled ? this.cacheManager.has(url) : false;
   }
 
   /**
@@ -282,17 +382,21 @@ export class ImageLoader {
    * Clear cache
    */
   clearCache(): void {
-    this.cache.clear();
+    this.cacheManager.clear();
   }
 
   /**
    * Get cache stats
    */
-  getCacheStats(): { size: number; urls: string[] } {
-    return {
-      size: this.cache.size,
-      urls: Array.from(this.cache.keys())
-    };
+  getCacheStats() {
+    return this.cacheManager.getStats();
+  }
+
+  /**
+   * Get performance stats
+   */
+  getPerformanceStats() {
+    return this.performanceMonitor?.getStats();
   }
 
   /**

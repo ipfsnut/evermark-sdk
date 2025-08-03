@@ -2,9 +2,10 @@
  * Manages browser cache for image loading optimization
  */
 export class CacheManager {
+    cache = new Map();
+    totalSize = 0;
+    config;
     constructor(config = {}) {
-        this.cache = new Map();
-        this.totalSize = 0;
         this.config = {
             maxSize: 50 * 1024 * 1024, // 50MB
             maxEntries: 100,

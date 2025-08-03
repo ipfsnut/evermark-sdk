@@ -9,10 +9,12 @@ import { resolveImageSources } from '@ipfsnut/evermark-sdk-core';
  * Implements your 3-step flow seamlessly with existing image loading
  */
 export class EnhancedImageLoader extends ImageLoader {
+    orchestrator = null;
+    autoTransfer;
+    onStorageProgress;
     constructor(options = {}) {
         const { storageConfig, autoTransfer = false, onStorageProgress, ...baseOptions } = options;
         super(baseOptions);
-        this.orchestrator = null;
         this.autoTransfer = autoTransfer;
         // Fix TypeScript strict mode issue - only assign if defined
         if (onStorageProgress) {
