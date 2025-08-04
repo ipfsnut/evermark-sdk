@@ -1,5 +1,6 @@
 /**
  * Pure utility functions for storage operations - no side effects
+ * NO EXTERNAL DEPENDENCIES
  */
 import type { StorageConfig } from './types.js';
 /**
@@ -27,16 +28,21 @@ export declare function generateStoragePath(ipfsHash: string, options?: {
     extension?: string;
 }): string;
 /**
- * Create default storage configuration
+ * ✅ FIXED: Create default storage configuration with existing client support
  */
-export declare function createDefaultStorageConfig(supabaseUrl: string, supabaseKey: string, bucketName?: string): StorageConfig;
+export declare function createDefaultStorageConfig(supabaseUrl: string, supabaseKey: string, bucketName?: string, existingClient?: any): StorageConfig;
 /**
- * Validate storage configuration
+ * ✅ ENHANCED: Validate storage configuration with deprecation warnings
  */
 export declare function validateStorageConfig(config: StorageConfig): {
     valid: boolean;
     errors: string[];
+    warnings: string[];
 };
+/**
+ * ✅ ENHANCED: Migrate deprecated bucket configuration
+ */
+export declare function migrateStorageConfig(config: StorageConfig): StorageConfig;
 /**
  * Extract file extension from URL or filename
  */
@@ -45,4 +51,16 @@ export declare function extractFileExtension(urlOrFilename: string): string | nu
  * Check if file is an image based on MIME type or extension
  */
 export declare function isImageFile(file: File | string): boolean;
+/**
+ * ✅ NEW: Get bucket name from config (handles deprecation)
+ */
+export declare function getBucketName(config: StorageConfig): string;
+/**
+ * ✅ NEW: Check if config has existing client
+ */
+export declare function hasExistingClient(config: StorageConfig): boolean;
+/**
+ * ✅ NEW: Create config with client validation
+ */
+export declare function createStorageConfigWithClient(supabaseUrl: string, supabaseKey: string, bucketName: string, client: any): StorageConfig;
 //# sourceMappingURL=storage-utils.d.ts.map

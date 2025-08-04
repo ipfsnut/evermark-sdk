@@ -1,5 +1,11 @@
 # @ipfsnut/evermark-sdk-core
 
+## 1.2.1
+
+### Patch Changes
+
+- forward!
+
 ## 1.1.1
 
 ### Patch Changes

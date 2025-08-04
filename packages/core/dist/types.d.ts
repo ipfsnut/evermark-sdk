@@ -1,6 +1,7 @@
 /**
  * Core types for the Evermark SDK image handling system
  * These types are designed to be framework-agnostic and pure
+ * NO EXTERNAL DEPENDENCIES - especially no Supabase imports
  */
 export interface ImageSource {
     url: string;
@@ -59,8 +60,9 @@ export interface StorageConfig {
     supabase: {
         url: string;
         anonKey: string;
-        bucketName: string;
+        bucketName?: string;
         serviceRoleKey?: string;
+        client?: any;
     };
     ipfs: {
         gateway: string;
@@ -76,6 +78,7 @@ export interface StorageConfig {
             height: number;
         };
     };
+    bucket?: string;
 }
 export interface TransferResult {
     success: boolean;

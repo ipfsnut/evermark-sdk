@@ -2,7 +2,7 @@
  * Integrates existing ImageLoader with storage orchestration
  */
 import { ImageLoader } from './image-loader.js';
-import type { ImageSourceInput, StorageConfig, UploadProgress, StorageFlowResult, TransferResult } from '@ipfsnut/evermark-sdk-core';
+import type { ImageSourceInput, StorageConfig, UploadProgress, StorageFlowResult, TransferResult } from '../../core';
 import type { ImageLoaderOptions, LoadImageResult } from './image-loader.js';
 export interface EnhancedImageLoaderOptions extends ImageLoaderOptions {
     /** Storage configuration for auto-transfer functionality */

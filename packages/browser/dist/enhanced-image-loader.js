@@ -2,8 +2,8 @@
  * Integrates existing ImageLoader with storage orchestration
  */
 import { ImageLoader } from './image-loader.js';
-import { StorageOrchestrator } from '@ipfsnut/evermark-sdk-storage';
-import { resolveImageSources } from '@ipfsnut/evermark-sdk-core';
+import { StorageOrchestrator } from '../../storage/src/storage-orchestrator.js';
+import { resolveImageSources } from '../../core/src/url-resolver.js';
 /**
  * Enhanced image loader that integrates with storage orchestration
  * Implements your 3-step flow seamlessly with existing image loading

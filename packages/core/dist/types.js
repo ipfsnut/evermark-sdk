@@ -1,6 +1,7 @@
 /**
  * Core types for the Evermark SDK image handling system
  * These types are designed to be framework-agnostic and pure
+ * NO EXTERNAL DEPENDENCIES - especially no Supabase imports
  */
 // =================
 // ERROR TYPES
