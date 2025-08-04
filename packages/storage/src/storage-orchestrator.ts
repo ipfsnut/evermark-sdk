@@ -1,15 +1,15 @@
 /**
- * YOUR MAIN 3-STEP FLOW IMPLEMENTATION
+ * Main storage orchestration - uses existing client when provided
  */
 
 import type { 
   ImageSourceInput, 
-  StorageConfig, 
   StorageFlowResult,
   UploadProgress,
   TransferResult
 } from '@ipfsnut/evermark-sdk-core';
 import { generateStoragePath, isValidIpfsHash } from '@ipfsnut/evermark-sdk-core';
+import type { StorageConfig } from './types.js';
 import { SupabaseStorageClient } from './supabase-client.js';
 import { IPFSClient } from './ipfs-client.js';
 
@@ -18,12 +18,20 @@ export class StorageOrchestrator {
   private ipfsClient: IPFSClient;
 
   constructor(private config: StorageConfig) {
+    // This will use existing client if provided in config.supabase.client
     this.supabaseClient = new SupabaseStorageClient(config.supabase);
     this.ipfsClient = new IPFSClient(config.ipfs);
+    
+    // Log client usage for debugging
+    if (config.supabase.client) {
+      console.log('✅ StorageOrchestrator: Configured with existing Supabase client');
+    } else {
+      console.warn('⚠️ StorageOrchestrator: No existing client provided, will create new one');
+    }
   }
 
   /**
-   * YOUR MAIN FLOW: Ensure image is available in Supabase
+   * Main flow: Ensure image is available in Supabase
    * 
    * 1. Check if image exists in Supabase
    * 2. If not, fetch from IPFS and upload to Supabase
@@ -140,9 +148,12 @@ export class StorageOrchestrator {
         throw new Error('Invalid IPFS hash provided');
       }
 
-      // Generate unique storage path
+      // Generate unique storage path using config defaults
       const extension = 'jpg'; // Could detect from content-type header
-      const storagePath = generateStoragePath(ipfsHash, { extension });
+      const storagePath = generateStoragePath(ipfsHash, { 
+        prefix: 'evermarks', // Use evermarks prefix
+        extension 
+      });
 
       // Check if file already exists in Supabase
       onProgress?.({
@@ -179,7 +190,7 @@ export class StorageOrchestrator {
             percentage: 20 + progressPercent,
             uploaded: loaded,
             ...(total !== undefined && { total }),
-            message: `Downloading from IPFS (${ipfsResult.gateway || 'unknown gateway'})...`
+            message: `Downloading from IPFS...`
           });
         }
       });
@@ -190,7 +201,7 @@ export class StorageOrchestrator {
 
       console.log(`📥 Successfully fetched ${ipfsResult.data.size} bytes from IPFS`);
 
-      // Upload to Supabase
+      // Upload to Supabase using existing client
       onProgress?.({
         phase: 'uploading',
         percentage: 70,
@@ -216,7 +227,7 @@ export class StorageOrchestrator {
         throw new Error(uploadResult.error || 'Failed to upload to Supabase');
       }
 
-      console.log('📤 Successfully uploaded to Supabase');
+      console.log('📤 Successfully uploaded to Supabase using existing client');
 
       onProgress?.({
         phase: 'complete',

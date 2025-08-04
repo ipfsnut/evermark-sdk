@@ -1,10 +1,11 @@
 /**
  * Core types for the Evermark SDK image handling system
  * These types are designed to be framework-agnostic and pure
+ * NO EXTERNAL DEPENDENCIES - especially no Supabase imports
  */
 
 // =================
-// EXISTING CORE TYPES (Enhanced)
+// CORE IMAGE TYPES
 // =================
 
 export interface ImageSource {
@@ -66,15 +67,16 @@ export interface SourceResolutionConfig {
 }
 
 // =================
-// NEW STORAGE TYPES
+// GENERIC STORAGE TYPES (NO SUPABASE IMPORTS)
 // =================
 
 export interface StorageConfig {
   supabase: {
     url: string;
     anonKey: string;
-    bucketName: string;
+    bucketName?: string;
     serviceRoleKey?: string;
+    client?: any; // GENERIC: No framework-specific types in core
   };
   ipfs: {
     gateway: string;
@@ -87,6 +89,7 @@ export interface StorageConfig {
     generateThumbnails?: boolean;
     thumbnailSize?: { width: number; height: number };
   };
+  bucket?: string; // DEPRECATED: Use supabase.bucketName instead
 }
 
 export interface TransferResult {
@@ -125,7 +128,7 @@ export interface ImageSourceInputWithStorage extends ImageSourceInput {
 }
 
 // =================
-// ENHANCED EVENT TYPES
+// EVENT TYPES
 // =================
 
 export type ImageLoadingEvent =

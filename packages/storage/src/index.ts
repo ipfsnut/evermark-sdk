@@ -7,22 +7,38 @@ export { SupabaseStorageClient } from './supabase-client.js';
 export { IPFSClient } from './ipfs-client.js';
 export { StorageOrchestrator } from './storage-orchestrator.js';
 
-// Import and re-export types from core
+// Import and re-export core types
 import type {
-  StorageConfig,
   TransferResult,
   UploadProgress,
   StorageFlowResult,
   ImageSourceInput
 } from '@ipfsnut/evermark-sdk-core';
 
-// Re-export types for convenience
-export type {
+// Import storage-specific types
+import type {
   StorageConfig,
+  SupabaseUploadOptions,
+  IPFSFetchOptions,
+  StorageTestResult,
+  IPFSGatewayStatus,
+  StorageStatus
+} from './types.js';
+
+// Re-export all types for convenience
+export type {
+  // Core types
   TransferResult,
   UploadProgress,
   StorageFlowResult,
-  ImageSourceInput
+  ImageSourceInput,
+  // Storage-specific types (with proper Supabase client typing)
+  StorageConfig,
+  SupabaseUploadOptions,
+  IPFSFetchOptions,
+  StorageTestResult,
+  IPFSGatewayStatus,
+  StorageStatus
 };
 
 // Import the actual class to use in functions
@@ -53,4 +69,4 @@ export function createStorageOrchestrator(config: StorageConfig): StorageOrchest
 }
 
 // Package metadata
-export const STORAGE_PACKAGE_VERSION = '0.1.0';
+export const STORAGE_PACKAGE_VERSION = '1.1.3';

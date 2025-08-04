@@ -1,26 +1,25 @@
-import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import type { 
-  StorageConfig, 
   TransferResult, 
   UploadProgress
 } from '@ipfsnut/evermark-sdk-core';
-
-export interface SupabaseUploadOptions {
-  path?: string;
-  upsert?: boolean;
-  contentType?: string;
-  cacheControl?: string;
-  onProgress?: (progress: UploadProgress) => void;
-}
+import type { StorageConfig, SupabaseUploadOptions } from './types.js';
 
 export class SupabaseStorageClient {
   private client: SupabaseClient;
   private bucketName: string;
 
   constructor(private config: StorageConfig['supabase']) {
-    this.client = createClient(config.url, config.anonKey);
-    this.bucketName = config.bucketName;
+    // CRITICAL FIX: Use existing client if provided, otherwise create new one
+    if (config.client) {
+      this.client = config.client;
+      console.log('✅ SupabaseStorageClient: Using existing Supabase client (no duplication)');
+    } else {
+      this.client = createClient(config.url, config.anonKey);
+      console.warn('⚠️ SupabaseStorageClient: Created new Supabase client - consider passing existing client to prevent duplication');
+    }
+    this.bucketName = config.bucketName || 'evermark-images';
   }
 
   /**

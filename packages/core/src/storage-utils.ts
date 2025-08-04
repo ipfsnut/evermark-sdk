@@ -1,5 +1,6 @@
 /**
  * Pure utility functions for storage operations - no side effects
+ * NO EXTERNAL DEPENDENCIES
  */
 
 import type { StorageConfig } from './types.js';
@@ -117,18 +118,21 @@ export function generateStoragePath(
 }
 
 /**
- * Create default storage configuration
+ * FIXED: Create default storage configuration with upload config
+ * Uses generic client type to avoid dependencies
  */
 export function createDefaultStorageConfig(
   supabaseUrl: string,
   supabaseKey: string,
-  bucketName: string = 'images'
+  bucketName: string = 'evermark-images',
+  existingClient?: any // Generic - no Supabase import needed
 ): StorageConfig {
   return {
     supabase: {
       url: supabaseUrl,
       anonKey: supabaseKey,
-      bucketName
+      bucketName,
+      ...(existingClient && { client: existingClient }) // Include existing client if provided
     },
     ipfs: {
       gateway: 'https://gateway.pinata.cloud/ipfs',
@@ -139,7 +143,7 @@ export function createDefaultStorageConfig(
       ],
       timeout: 10000
     },
-    upload: {
+    upload: { // CRITICAL: Include upload config that was missing
       maxFileSize: 10 * 1024 * 1024, // 10MB
       allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
       generateThumbnails: true,
@@ -163,8 +167,9 @@ export function validateStorageConfig(config: StorageConfig): { valid: boolean; 
     if (!config.supabase.anonKey || config.supabase.anonKey.length < 10) {
       errors.push('Valid Supabase anonymous key is required');
     }
-    if (!config.supabase.bucketName || config.supabase.bucketName.length === 0) {
-      errors.push('Supabase bucket name is required');
+    // Make bucketName optional with fallback
+    if (!config.supabase.bucketName && !config.bucket) {
+      console.warn('No bucket name specified, using default: evermark-images');
     }
   }
   
@@ -173,6 +178,16 @@ export function validateStorageConfig(config: StorageConfig): { valid: boolean; 
   } else {
     if (!config.ipfs.gateway || !isValidUrl(config.ipfs.gateway)) {
       errors.push('Valid IPFS gateway URL is required');
+    }
+  }
+
+  // FIXED: Validate upload config if present (make it optional)
+  if (config.upload) {
+    if (config.upload.maxFileSize && config.upload.maxFileSize <= 0) {
+      errors.push('Upload max file size must be positive');
+    }
+    if (config.upload.allowedFormats && !Array.isArray(config.upload.allowedFormats)) {
+      errors.push('Upload allowed formats must be an array');
     }
   }
   
