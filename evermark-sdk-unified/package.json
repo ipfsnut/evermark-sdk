@@ -1,7 +1,7 @@
 {
-  "name": "@ipfsnut/evermark-sdk-react",
-  "version": "1.2.2",
-  "description": "React components and hooks for Evermark SDK",
+  "name": "evermark-sdk",
+  "version": "0.0.1",
+  "description": "Unified SDK for robust image handling and content management with storage orchestration",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -9,6 +9,22 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./core": {
+      "import": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./browser": {
+      "import": "./dist/browser/index.js",
+      "types": "./dist/browser/index.d.ts"
+    },
+    "./storage": {
+      "import": "./dist/storage/index.js",
+      "types": "./dist/storage/index.d.ts"
+    },
+    "./react": {
+      "import": "./dist/react/index.js",
+      "types": "./dist/react/index.d.ts"
     }
   },
   "files": [
@@ -23,14 +39,15 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "pnpm build",
+    "test:integration": "vitest --run integration.test.ts"
   },
   "dependencies": {
-    "@ipfsnut/evermark-sdk-core": "1.2.2",
-    "@ipfsnut/evermark-sdk-browser": "1.2.2",
-    "@ipfsnut/evermark-sdk-storage": "1.2.2"
+    "@supabase/supabase-js": "^2.53.0"
   },
   "devDependencies": {
+    "@types/node": "^20.19.9",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "typescript": "^5.6.3",
@@ -43,22 +60,31 @@
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
   },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
   "keywords": [
-    "react",
-    "hooks",
-    "components",
     "image",
     "loading",
-    "evermark",
+    "fallback",
     "blockchain",
-    "web3"
+    "web3",
+    "supabase",
+    "ipfs",
+    "react",
+    "typescript",
+    "evermark"
   ],
   "author": "ipfsnut",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ipfsnut/evermark-sdk.git",
-    "directory": "packages/react"
+    "url": "https://github.com/ipfsnut/evermark-sdk.git"
   },
   "bugs": {
     "url": "https://github.com/ipfsnut/evermark-sdk/issues"
@@ -67,5 +93,8 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
