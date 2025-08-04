@@ -1,8 +1,9 @@
 /**
- * Core types for the Evermark SDK image handling system
- * These types are designed to be framework-agnostic and pure
- * NO EXTERNAL DEPENDENCIES - especially no Supabase imports
+ * Core types for the Evermark SDK
+ * Consolidated from multiple files with proper Supabase integration
  */
+
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // =================
 // CORE IMAGE TYPES
@@ -67,7 +68,7 @@ export interface SourceResolutionConfig {
 }
 
 // =================
-// STORAGE TYPES (FIXED WITH CLIENT SUPPORT)
+// STORAGE TYPES
 // =================
 
 export interface StorageConfig {
@@ -76,7 +77,7 @@ export interface StorageConfig {
     anonKey: string;
     bucketName?: string;
     serviceRoleKey?: string;
-    client?: any; // ✅ FIXED: Added optional client property (generic to avoid imports)
+    client?: SupabaseClient;
   };
   ipfs: {
     gateway: string;
@@ -89,9 +90,6 @@ export interface StorageConfig {
     generateThumbnails?: boolean;
     thumbnailSize?: { width: number; height: number };
   };
-  // ⚠️ DEPRECATED: Use supabase.bucketName instead
-  // Kept for backward compatibility but will be removed in v2.0
-  bucket?: string;
 }
 
 export interface TransferResult {
@@ -122,30 +120,105 @@ export interface StorageFlowResult {
   warnings?: string[];
 }
 
-export interface ImageSourceInputWithStorage extends ImageSourceInput {
-  forceTransfer?: boolean;
-  storageConfig?: Partial<StorageConfig>;
-  onProgress?: (progress: UploadProgress) => void;
-  onTransferComplete?: (result: TransferResult) => void;
+// =================
+// BROWSER TYPES
+// =================
+
+export interface ImageLoaderOptions {
+  maxRetries?: number;
+  timeout?: number;
+  useCORS?: boolean;
+  headers?: Record<string, string>;
+  onProgress?: (loaded: number, total: number) => void;
+  debug?: boolean;
+  cache?: {
+    enabled?: boolean;
+    maxSize?: number;
+    maxEntries?: number;
+    ttl?: number;
+    persistent?: boolean;
+  };
+  monitoring?: {
+    enabled?: boolean;
+    maxMetrics?: number;
+  };
+}
+
+export interface LoadImageResult {
+  success: boolean;
+  imageUrl?: string;
+  source?: ImageSource;
+  loadTime?: number;
+  fromCache?: boolean;
+  error?: string;
+  attempts?: LoadAttempt[];
+  transferResult?: TransferResult;
+}
+
+export interface CacheEntry {
+  url: string;
+  timestamp: number;
+  size?: number;
+  mimeType?: string;
+  loadTime?: number;
+  accessCount: number;
+  lastAccessed: number;
+}
+
+export interface CacheConfig {
+  maxSize?: number;
+  maxEntries?: number;
+  ttl?: number;
+  persistent?: boolean;
+}
+
+export interface LoadMetrics {
+  url: string;
+  source: string;
+  startTime: number;
+  endTime: number;
+  loadTime: number;
+  fromCache: boolean;
+  success: boolean;
+  error?: string;
+  retryCount: number;
+  size?: number;
+}
+
+export interface PerformanceStats {
+  totalLoads: number;
+  successfulLoads: number;
+  failedLoads: number;
+  averageLoadTime: number;
+  cacheHitRate: number;
+  sourceSuccessRates: Record<string, number>;
+  commonErrors: Array<{ error: string; count: number }>;
 }
 
 // =================
-// EVENT TYPES
+// STORAGE CLIENT TYPES
 // =================
 
-export type ImageLoadingEvent =
-  | { type: 'source_attempt_start'; source: ImageSource }
-  | { type: 'source_attempt_success'; source: ImageSource; url: string }
-  | { type: 'source_attempt_failed'; source: ImageSource; error: string }
-  | { type: 'transfer_started'; ipfsHash: string; targetBucket: string }
-  | { type: 'transfer_progress'; progress: UploadProgress }
-  | { type: 'transfer_complete'; result: TransferResult }
-  | { type: 'transfer_failed'; ipfsHash: string; error: string }
-  | { type: 'all_sources_failed'; attempts: LoadAttempt[] }
-  | { type: 'loading_complete'; finalUrl: string; totalTime: number }
-  | { type: 'loading_aborted'; reason: string };
+export interface SupabaseUploadOptions {
+  path?: string;
+  upsert?: boolean;
+  contentType?: string;
+  cacheControl?: string;
+  onProgress?: (progress: UploadProgress) => void;
+}
 
-export type ImageLoadingEventHandler = (event: ImageLoadingEvent) => void;
+export interface IPFSFetchOptions {
+  timeout?: number;
+  maxRetries?: number;
+  onProgress?: (loaded: number, total?: number) => void;
+}
+
+export interface CORSConfig {
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
+  allowedOrigins?: string[];
+  customHeaders?: Record<string, string>;
+}
 
 // =================
 // ERROR TYPES
@@ -182,36 +255,3 @@ export type Result<T, E = Error> =
   | { success: false; error: E };
 
 export type SourceResolver = (input: ImageSourceInput, config?: SourceResolutionConfig) => ImageSource[];
-
-export type SourceLoader = (
-  source: ImageSource, 
-  signal?: AbortSignal
-) => Promise<Result<string, ImageLoadingError>>;
-
-export type StorageTransferFunction = (
-  ipfsHash: string,
-  config: StorageConfig,
-  onProgress?: (progress: UploadProgress) => void
-) => Promise<TransferResult>;
-
-export interface ImageLoaderOptions {
-  maxRetries?: number;
-  timeout?: number;
-  useCORS?: boolean;
-  headers?: Record<string, string>;
-  onProgress?: (loaded: number, total: number) => void;
-  debug?: boolean;
-  storageConfig?: StorageConfig;
-  autoTransfer?: boolean;
-}
-
-export interface LoadImageResult {
-  success: boolean;
-  imageUrl?: string;
-  source?: ImageSource;
-  loadTime?: number;
-  fromCache?: boolean;
-  error?: string;
-  attempts?: LoadAttempt[];
-  transferResult?: TransferResult;
-}

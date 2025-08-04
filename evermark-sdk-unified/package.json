@@ -1,6 +1,6 @@
 {
   "name": "evermark-sdk",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Unified SDK for robust image handling and content management with storage orchestration",
   "type": "module",
   "main": "./dist/index.js",
@@ -30,7 +30,7 @@
   "files": [
     "dist/**/*",
     "README.md",
-    "CHANGELOG.md"
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
@@ -40,8 +40,7 @@
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
-    "prepublishOnly": "pnpm build",
-    "test:integration": "vitest --run integration.test.ts"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.53.0"
@@ -50,11 +49,11 @@
     "@types/node": "^20.19.9",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.9",
     "@vitest/coverage-v8": "^2.1.9",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "typescript": "^5.9.2",
+    "vitest": "^2.1.9"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -90,10 +89,6 @@
     "url": "https://github.com/ipfsnut/evermark-sdk/issues"
   },
   "homepage": "https://github.com/ipfsnut/evermark-sdk#readme",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
   "engines": {
     "node": ">=18.0.0"
   }

@@ -1,59 +1,15 @@
 import type { 
   ImageSource, 
   LoadAttempt, 
-  LoadingState, 
-  ImageLoadingError, 
-  Result 
-} from '../../core/src/types.js';
-
-import { CacheManager, type CacheConfig, type CacheEntry } from './cache-manager.js';
-import { PerformanceMonitor } from './performance.js';
-
-export interface ImageLoaderOptions {
-  /** Maximum number of retry attempts per source */
-  maxRetries?: number;
-  /** Timeout for each load attempt in milliseconds */
-  timeout?: number;
-  /** Whether to use CORS mode */
-  useCORS?: boolean;
-  /** Custom headers for requests */
-  headers?: Record<string, string>;
-  /** Progress callback */
-  onProgress?: (loaded: number, total: number) => void;
-  /** Debug mode for detailed logging */
-  debug?: boolean;
-  /** Cache configuration */
-  cache?: {
-    enabled?: boolean;
-    maxSize?: number;
-    maxEntries?: number;
-    ttl?: number;
-    persistent?: boolean;
-  };
-  /** Performance monitoring */
-  monitoring?: {
-    enabled?: boolean;
-    maxMetrics?: number;
-  };
-}
-
-export interface LoadImageResult {
-  success: boolean;
-  imageUrl?: string;
-  source?: ImageSource;
-  loadTime?: number;
-  fromCache?: boolean;
-  error?: string;
-  attempts?: LoadAttempt[];
-}
+  ImageLoaderOptions,
+  LoadImageResult
+} from '../core/types';
 
 /**
  * Browser-specific image loader that handles CORS, retries, and fallbacks
  */
 export class ImageLoader {
   private abortController: AbortController | null = null;
-  private cacheManager: CacheManager;
-  private performanceMonitor?: PerformanceMonitor;
 
   constructor(private options: ImageLoaderOptions = {}) {
     this.options = {
@@ -61,37 +17,8 @@ export class ImageLoader {
       timeout: 8000,
       useCORS: true,
       debug: false,
-      cache: { enabled: true },
-      monitoring: { enabled: false },
       ...options
     };
-
-    // Build cache config properly for exactOptionalPropertyTypes
-    const cacheConfig: CacheConfig = {};
-    
-    if (this.options.cache?.maxSize !== undefined) {
-      cacheConfig.maxSize = this.options.cache.maxSize;
-    }
-    
-    if (this.options.cache?.maxEntries !== undefined) {
-      cacheConfig.maxEntries = this.options.cache.maxEntries;
-    }
-    
-    if (this.options.cache?.ttl !== undefined) {
-      cacheConfig.ttl = this.options.cache.ttl;
-    }
-    
-    if (this.options.cache?.persistent !== undefined) {
-      cacheConfig.persistent = this.options.cache.persistent;
-    }
-
-    // Initialize cache manager with properly constructed config
-    this.cacheManager = new CacheManager(cacheConfig);
-
-    // Initialize performance monitor if enabled
-    if (this.options.monitoring?.enabled) {
-      this.performanceMonitor = new PerformanceMonitor();
-    }
   }
 
   /**
@@ -123,31 +50,14 @@ export class ImageLoader {
         if (attempt.status === 'success') {
           const loadTime = Date.now() - startTime;
           
-          // Check if loaded from cache
-          const fromCache = this.isFromCache(source.url);
-          
           this.log(`✅ Image loaded successfully from ${source.metadata?.storageProvider} in ${loadTime}ms`);
           
-          // Record performance metrics
-          if (this.performanceMonitor) {
-            this.performanceMonitor.recordLoad({
-              url: source.url,
-              source: source.metadata?.storageProvider || 'unknown',
-              startTime,
-              endTime: Date.now(),
-              loadTime,
-              fromCache,
-              success: true,
-              retryCount: attempts.length - 1
-            });
-          }
-
           return {
             success: true,
             imageUrl: source.url,
             source,
             loadTime,
-            fromCache,
+            fromCache: false,
             attempts
           };
         }
@@ -158,24 +68,6 @@ export class ImageLoader {
       // All sources failed
       const totalTime = Date.now() - startTime;
       this.log(`💥 All ${sources.length} sources failed after ${totalTime}ms`);
-
-      // Record failure metrics
-      if (this.performanceMonitor && sources.length > 0) {
-        const firstSource = sources[0];
-        if (firstSource) {
-          this.performanceMonitor.recordLoad({
-            url: firstSource.url,
-            source: firstSource.metadata?.storageProvider || 'unknown',
-            startTime,
-            endTime: Date.now(),
-            loadTime: totalTime,
-            fromCache: false,
-            success: false,
-            error: `Failed to load from ${sources.length} sources`,
-            retryCount: attempts.length
-          });
-        }
-      }
 
       return {
         success: false,
@@ -206,15 +98,6 @@ export class ImageLoader {
     };
 
     try {
-      // Check cache first
-      if (this.options.cache?.enabled && this.cacheManager.has(source.url)) {
-        attempt.endTime = Date.now();
-        attempt.status = 'success';
-        attempt.debug = { networkTime: 0, cacheHit: true };
-        this.log(`💾 Cache hit for ${source.url}`);
-        return attempt;
-      }
-
       // Attempt to load with retries
       let lastError: Error | null = null;
       const maxRetries = this.options.maxRetries || 2;
@@ -227,51 +110,6 @@ export class ImageLoader {
 
         try {
           await this.loadWithTimeout(source.url, source.timeout || this.options.timeout!);
-          
-          // Success - update cache with proper CacheEntry type
-          if (this.options.cache?.enabled) {
-            // Create a proper CacheEntry with required fields
-            const cacheEntry: Partial<CacheEntry> = {
-              url: source.url,
-              timestamp: Date.now(),
-              loadTime: Date.now() - startTime,
-              accessCount: 1,
-              lastAccessed: Date.now()
-            };
-            
-            // Add optional properties if available
-            if (source.metadata?.format) {
-              const formatToMimeType: Record<string, string> = {
-                'jpg': 'image/jpeg',
-                'jpeg': 'image/jpeg',
-                'png': 'image/png',
-                'gif': 'image/gif',
-                'webp': 'image/webp',
-                'svg': 'image/svg+xml'
-              };
-              
-              const mimeType = formatToMimeType[source.metadata.format];
-              if (mimeType) {
-                cacheEntry.mimeType = mimeType;
-              }
-            }
-            
-            // Estimate size if not available (rough estimate based on format)
-            if (!cacheEntry.size && source.metadata?.format) {
-              const estimatedSizes: Record<string, number> = {
-                'jpg': 100000,   // ~100KB average
-                'jpeg': 100000,
-                'png': 200000,   // ~200KB average
-                'gif': 150000,   // ~150KB average
-                'webp': 80000,   // ~80KB average
-                'svg': 10000     // ~10KB average
-              };
-              
-              cacheEntry.size = estimatedSizes[source.metadata.format] || 100000;
-            }
-            
-            this.cacheManager.set(source.url, cacheEntry);
-          }
           
           attempt.endTime = Date.now();
           attempt.status = 'success';
@@ -298,11 +136,6 @@ export class ImageLoader {
       attempt.endTime = Date.now();
       attempt.status = 'failed';
       attempt.error = lastError?.message || 'Unknown error';
-
-      // Detect specific error types
-      if (lastError?.message.includes('CORS')) {
-        attempt.debug = { corsIssue: true };
-      }
 
       return attempt;
 
@@ -364,40 +197,12 @@ export class ImageLoader {
   }
 
   /**
-   * Check if URL is in cache and still valid
-   */
-  private isFromCache(url: string): boolean {
-    return this.options.cache?.enabled ? this.cacheManager.has(url) : false;
-  }
-
-  /**
    * Abort current loading operation
    */
   abort(): void {
     if (this.abortController) {
       this.abortController.abort();
     }
-  }
-
-  /**
-   * Clear cache
-   */
-  clearCache(): void {
-    this.cacheManager.clear();
-  }
-
-  /**
-   * Get cache stats
-   */
-  getCacheStats() {
-    return this.cacheManager.getStats();
-  }
-
-  /**
-   * Get performance stats
-   */
-  getPerformanceStats() {
-    return this.performanceMonitor?.getStats();
   }
 
   /**

@@ -2,14 +2,8 @@
  * IPFS fetching with multiple gateway fallbacks
  */
 
-import { isValidIpfsHash } from '@ipfsnut/evermark-sdk-core';
-import type { StorageConfig } from '@ipfsnut/evermark-sdk-core';
-
-export interface IPFSFetchOptions {
-  timeout?: number;
-  maxRetries?: number;
-  onProgress?: (loaded: number, total?: number) => void;
-}
+import { isValidIpfsHash } from '../core/url-resolver';
+import type { StorageConfig, IPFSFetchOptions } from '../core/types';
 
 export class IPFSClient {
   private gateways: string[];

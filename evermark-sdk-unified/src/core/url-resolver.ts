@@ -1,6 +1,5 @@
 /**
  * Pure functions for resolving image sources from various input types
- * This module contains no side effects and is easily testable
  */
 
 import type { 
@@ -8,7 +7,7 @@ import type {
   ImageSourceInput, 
   SourceResolutionConfig,
   SourceResolver 
-} from './types.js';
+} from './types';
 
 /**
  * Default configuration for source resolution
@@ -21,7 +20,7 @@ const DEFAULT_CONFIG: Required<SourceResolutionConfig> = {
   mobileOptimization: false,
   priorityOverrides: {},
   preferThumbnail: false,
-  storageConfig: undefined as any, // Will be overridden when provided
+  storageConfig: undefined as any,
   autoTransfer: false
 };
 
@@ -217,73 +216,49 @@ export function createPlaceholderSource(
 }
 
 /**
- * Filters sources based on network conditions or preferences
+ * Create default storage configuration
  */
-export function filterSourcesByCondition(
-  sources: ImageSource[],
-  condition: 'slow-network' | 'fast-network' | 'prefer-thumbnails' | 'avoid-ipfs'
-): ImageSource[] {
-  switch (condition) {
-    case 'slow-network':
-      return sources.filter(s => 
-        s.type === 'thumbnail' || 
-        (s.metadata?.storageProvider === 'supabase' && s.metadata?.size !== 'original')
-      );
-    
-    case 'fast-network':
-      return sources; // Use all sources
-    
-    case 'prefer-thumbnails':
-      return sources.filter(s => s.type === 'thumbnail' || s.type === 'primary');
-    
-    case 'avoid-ipfs':
-      return sources.filter(s => s.metadata?.storageProvider !== 'ipfs');
-    
-    default:
-      return sources;
+export function createDefaultStorageConfig(
+  supabaseUrl: string,
+  supabaseKey: string,
+  bucketName: string = 'evermark-images',
+  existingClient?: any
+) {
+  if (!supabaseUrl || typeof supabaseUrl !== 'string') {
+    throw new Error('Invalid supabaseUrl: must be a non-empty string');
   }
-}
-
-/**
- * Validates a complete image source configuration
- */
-export function validateImageSources(sources: ImageSource[]): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
-
-  if (sources.length === 0) {
-    errors.push('No image sources provided');
+  
+  if (!supabaseKey || typeof supabaseKey !== 'string') {
+    throw new Error('Invalid supabaseKey: must be a non-empty string');
+  }
+  
+  if (!bucketName || typeof bucketName !== 'string') {
+    throw new Error('Invalid bucketName: must be a non-empty string');
   }
 
-  for (let i = 0; i < sources.length; i++) {
-    const source = sources[i];
-    
-    if (!source) {
-      errors.push(`Source at index ${i} is undefined`);
-      continue;
+  const config = {
+    supabase: {
+      url: supabaseUrl,
+      anonKey: supabaseKey,
+      bucketName,
+      ...(existingClient && { client: existingClient })
+    },
+    ipfs: {
+      gateway: 'https://gateway.pinata.cloud/ipfs',
+      fallbackGateways: [
+        'https://ipfs.io/ipfs',
+        'https://cloudflare-ipfs.com/ipfs',
+        'https://gateway.ipfs.io/ipfs'
+      ],
+      timeout: 10000
+    },
+    upload: {
+      maxFileSize: 10 * 1024 * 1024, // 10MB
+      allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+      generateThumbnails: true,
+      thumbnailSize: { width: 400, height: 400 }
     }
-    
-    if (!isValidUrl(source.url)) {
-      errors.push(`Invalid URL at index ${i}: ${source.url}`);
-    }
-    
-    if (typeof source.priority !== 'number' || source.priority < 0) {
-      errors.push(`Invalid priority at index ${i}: ${source.priority}`);
-    }
-    
-    if (source.timeout && (typeof source.timeout !== 'number' || source.timeout <= 0)) {
-      errors.push(`Invalid timeout at index ${i}: ${source.timeout}`);
-    }
-  }
-
-  // Check for duplicate priorities
-  const priorities = sources.map(s => s.priority);
-  const duplicates = priorities.filter((p, i) => priorities.indexOf(p) !== i);
-  if (duplicates.length > 0) {
-    errors.push(`Duplicate priorities found: ${duplicates.join(', ')}`);
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors
   };
+
+  return config;
 }

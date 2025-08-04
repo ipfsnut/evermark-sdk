@@ -1,28 +1,27 @@
 /**
  * Main storage orchestration - uses existing client when provided
+ * FIXED: Changed all imports to relative paths
  */
 
 import type { 
   ImageSourceInput, 
   StorageFlowResult,
   UploadProgress,
-  TransferResult
-} from '@ipfsnut/evermark-sdk-core';
-import { generateStoragePath, isValidIpfsHash } from '@ipfsnut/evermark-sdk-core';
-import type { StorageConfig } from './types.js';
-import { SupabaseStorageClient } from './supabase-client.js';
-import { IPFSClient } from './ipfs-client.js';
+  TransferResult,
+  StorageConfig
+} from '../core/types';
+import { isValidIpfsHash } from '../core/url-resolver';
+import { SupabaseStorageClient } from './supabase-client';
+import { IPFSClient } from './ipfs-client';
 
 export class StorageOrchestrator {
   private supabaseClient: SupabaseStorageClient;
   private ipfsClient: IPFSClient;
 
   constructor(private config: StorageConfig) {
-    // This will use existing client if provided in config.supabase.client
     this.supabaseClient = new SupabaseStorageClient(config.supabase);
     this.ipfsClient = new IPFSClient(config.ipfs);
     
-    // Log client usage for debugging
     if (config.supabase.client) {
       console.log('✅ StorageOrchestrator: Configured with existing Supabase client');
     } else {
@@ -32,10 +31,6 @@ export class StorageOrchestrator {
 
   /**
    * Main flow: Ensure image is available in Supabase
-   * 
-   * 1. Check if image exists in Supabase
-   * 2. If not, fetch from IPFS and upload to Supabase
-   * 3. Fall back gracefully if transfers fail
    */
   async ensureImageInSupabase(
     input: ImageSourceInput,
@@ -78,7 +73,6 @@ export class StorageOrchestrator {
         const transferResult = await this.transferIPFSToSupabase(
           input.ipfsHash,
           (progress) => {
-            // Map transfer progress to overall progress (30-90%)
             const adjustedProgress = {
               ...progress,
               percentage: 30 + (progress.percentage * 0.6)
@@ -148,12 +142,9 @@ export class StorageOrchestrator {
         throw new Error('Invalid IPFS hash provided');
       }
 
-      // Generate unique storage path using config defaults
-      const extension = 'jpg'; // Could detect from content-type header
-      const storagePath = generateStoragePath(ipfsHash, { 
-        prefix: 'evermarks', // Use evermarks prefix
-        extension 
-      });
+      // Generate unique storage path
+      const extension = 'jpg';
+      const storagePath = `evermarks/${ipfsHash.slice(0, 8)}/${ipfsHash}.${extension}`;
 
       // Check if file already exists in Supabase
       onProgress?.({
@@ -201,7 +192,7 @@ export class StorageOrchestrator {
 
       console.log(`📥 Successfully fetched ${ipfsResult.data.size} bytes from IPFS`);
 
-      // Upload to Supabase using existing client
+      // Upload to Supabase
       onProgress?.({
         phase: 'uploading',
         percentage: 70,
@@ -227,7 +218,7 @@ export class StorageOrchestrator {
         throw new Error(uploadResult.error || 'Failed to upload to Supabase');
       }
 
-      console.log('📤 Successfully uploaded to Supabase using existing client');
+      console.log('📤 Successfully uploaded to Supabase');
 
       onProgress?.({
         phase: 'complete',
@@ -267,29 +258,5 @@ export class StorageOrchestrator {
     } catch {
       return false;
     }
-  }
-
-  /**
-   * Get storage status
-   */
-  async getStorageStatus(): Promise<{
-    supabase: { available: boolean; latency?: number };
-    ipfs: { available: boolean; gateways: Array<{ gateway: string; available: boolean; latency?: number }> };
-  }> {
-    const [supabaseTest, ipfsTest] = await Promise.all([
-      this.supabaseClient.testConnection(),
-      this.ipfsClient.testGateways()
-    ]);
-
-    return {
-      supabase: {
-        available: supabaseTest.success,
-        ...(supabaseTest.success && supabaseTest.latency !== undefined && { latency: supabaseTest.latency })
-      },
-      ipfs: {
-        available: ipfsTest.some(g => g.available),
-        gateways: ipfsTest
-      }
-    };
   }
 }

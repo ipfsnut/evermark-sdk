@@ -39,9 +39,6 @@
     "dist",
     "node_modules",
     "**/*.test.ts",
-    "**/*.spec.ts",
-    "README.md",
-    "CHANGELOG.md",
-    "package.json"
+    "**/*.spec.ts"
   ]
 }
