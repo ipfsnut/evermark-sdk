@@ -1,6 +1,6 @@
 {
   "name": "evermark-sdk",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.1",
   "description": "Unified SDK for robust image handling and content management with storage orchestration",
   "type": "module",
   "main": "./dist/index.js",
