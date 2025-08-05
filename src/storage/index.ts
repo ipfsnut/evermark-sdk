@@ -1,6 +1,6 @@
 /**
  * Storage module exports
- * MINIMAL CHANGES: Fixed import paths only
+ * PHASE 1: Added ensureImageInSupabase standalone function
  */
 
 // Main classes
@@ -18,3 +18,25 @@ export type {
   SupabaseUploadOptions,
   IPFSFetchOptions
 } from '../core/types.js';
+
+// PHASE 1: Add the standalone function that Beta app expects
+import { StorageOrchestrator } from './storage-orchestrator.js';
+import type { 
+  ImageSourceInput, 
+  StorageConfig, 
+  UploadProgress, 
+  StorageFlowResult 
+} from '../core/types.js';
+
+/**
+ * Ensure image is available in Supabase Storage
+ * Convenience wrapper around StorageOrchestrator for backward compatibility
+ */
+export async function ensureImageInSupabase(
+  input: ImageSourceInput,
+  storageConfig: StorageConfig,
+  onProgress?: (progress: UploadProgress) => void
+): Promise<StorageFlowResult> {
+  const orchestrator = new StorageOrchestrator(storageConfig);
+  return await orchestrator.ensureImageInSupabase(input, onProgress);
+}

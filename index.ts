@@ -1,46 +1,52 @@
 /**
  * Evermark SDK - Main entry point
- * Unified package exports
+ * PHASE 2: Added convenient API alongside existing exports
  */
 
-import { StorageOrchestrator } from './src/storage/storage-orchestrator';
-
 // =================
-// CORE EXPORTS
+// CONVENIENT API (Phase 2 - New!)
 // =================
 
+// Main user workflows - the "happy path"
+export {
+  loadImage,
+  transferToSupabase,
+  createImageLoader,
+  showImage,
+  createStorageOrchestrator
+} from './src/convenient-api.js';
+
+// =================
+// COMMON EXPORTS (Existing + Phase 1 additions)
+// =================
+
+// Most frequently used functions at top level
 export {
   resolveImageSources,
-  createIpfsUrl,
-  createPlaceholderSource,
+  createDefaultStorageConfig,
   isValidUrl,
   isValidIpfsHash,
-  createDefaultStorageConfig
-} from './src/core/index.js';
-
-export type {
-  ImageSource,
-  ImageSourceInput,
-  LoadAttempt,
-  LoadingState,
-  SourceResolutionConfig,
-  StorageConfig,
-  TransferResult,
-  UploadProgress,
-  StorageFlowResult,
-  ImageLoaderOptions,
-  LoadImageResult,
-  Result
+  createIpfsUrl,
+  generateStoragePath,        // Phase 1 addition
+  validateStorageConfig       // Phase 1 addition
 } from './src/core/index.js';
 
 export {
-  ImageLoadingError,
-  StorageError
-} from './src/core/index.js';
+  StorageOrchestrator,
+  SupabaseStorageClient,
+  IPFSClient,
+  ensureImageInSupabase       // Phase 1 addition
+} from './src/storage/index.js';
 
-// =================
-// BROWSER EXPORTS
-// =================
+export {
+  EvermarkImage,
+  useImageLoader,
+  ImageDisplay,
+  useStorageFlow,
+  useImageUpload,
+  ImageUpload,
+  ImageTransferStatus
+} from './src/react/index.js';
 
 export {
   ImageLoader,
@@ -50,96 +56,43 @@ export {
   PerformanceMonitor
 } from './src/browser/index.js';
 
+// =================
+// ADVANCED MODULE ACCESS (Existing)
+// =================
+
+// Full module exports for power users who want everything
+export * as core from './src/core/index.js';
+export * as browser from './src/browser/index.js';
+export * as storage from './src/storage/index.js';
+export * as react from './src/react/index.js';
+
+// =================
+// COMMON TYPES (Phase 2 - More accessible)
+// =================
+
 export type {
-  EnhancedImageLoaderOptions,
+  ImageSourceInput,
+  StorageConfig,
+  LoadImageResult,
+  StorageFlowResult,
+  UploadProgress,
+  ImageSource,
+  TransferResult,
+  ImageLoaderOptions,
+  LoadAttempt,
+  SourceResolutionConfig,
   CacheEntry,
   CacheConfig,
   LoadMetrics,
   PerformanceStats,
-  CORSConfig
-} from './src/browser/index.js';
-
-// =================
-// STORAGE EXPORTS
-// =================
-
-export {
-  SupabaseStorageClient,
-  IPFSClient,
-  StorageOrchestrator
-} from './src/storage/index.js';
-
-export type {
   SupabaseUploadOptions,
-  IPFSFetchOptions
-} from './src/storage/index.js';
-
-// =================
-// REACT EXPORTS
-// =================
-
-export {
-  ImageDisplay,
-  EvermarkImage,
-  ImageUpload,
-  ImageTransferStatus,
-  useImageLoader,
-  useStorageFlow,
-  useImageUpload
-} from './src/react/index.js';
-
-export type {
-  ImageDisplayProps,
-  UseImageLoaderOptions,
-  UseImageLoaderResult,
-  UseStorageFlowOptions,
-  UseStorageFlowResult,
-  UseImageUploadOptions,
-  UseImageUploadResult
-} from './src/react/index.js';
-
-// =================
-// CONVENIENCE FUNCTIONS
-// =================
-
-/**
- * Create storage orchestrator with config
- */
-export function createStorageOrchestrator(
-  supabaseUrl: string,
-  supabaseKey: string,
-  bucketName: string = 'images',
-  existingClient?: any
-) {
-  const config = {
-    supabase: {
-      url: supabaseUrl,
-      anonKey: supabaseKey,
-      bucketName,
-      ...(existingClient && { client: existingClient })
-    },
-    ipfs: {
-      gateway: 'https://gateway.pinata.cloud/ipfs',
-      fallbackGateways: [
-        'https://ipfs.io/ipfs',
-        'https://cloudflare-ipfs.com/ipfs'
-      ],
-      timeout: 10000
-    },
-    upload: {
-      maxFileSize: 10 * 1024 * 1024,
-      allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-      generateThumbnails: true,
-      thumbnailSize: { width: 400, height: 400 }
-    }
-  };
-
-  return new StorageOrchestrator(config);
-}
+  IPFSFetchOptions,
+  CORSConfig
+} from './src/core/index.js';
 
 // =================
 // PACKAGE METADATA
 // =================
 
-export const PACKAGE_VERSION = '0.1.0';
+export const PACKAGE_VERSION = '0.2.0';
 export const PACKAGE_NAME = 'evermark-sdk';
