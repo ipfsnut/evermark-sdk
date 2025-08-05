@@ -1,64 +1,95 @@
 {
   "name": "evermark-sdk",
   "version": "0.1.0",
-  "description": "SDK for robust image handling and content management with storage orchestration",
-  "private": true,
+  "description": "Unified SDK for robust image handling and content management with storage orchestration",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./core": {
+      "import": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./browser": {
+      "import": "./dist/browser/index.js",
+      "types": "./dist/browser/index.d.ts"
+    },
+    "./storage": {
+      "import": "./dist/storage/index.js",
+      "types": "./dist/storage/index.d.ts"
+    },
+    "./react": {
+      "import": "./dist/react/index.js",
+      "types": "./dist/react/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "test": "turbo test",
-    "test:watch": "turbo test:watch",
-    "test:coverage": "turbo test:coverage",
-    "lint": "turbo lint",
-    "lint:fix": "turbo lint:fix",
-    "type-check": "turbo type-check",
-    "clean": "turbo clean && rm -rf node_modules",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "turbo build && changeset publish",
-    "test:storage": "turbo test --filter=@ipfsnut/evermark-sdk-storage",
-    "test:integration": "turbo test --filter=@ipfsnut/evermark-sdk-browser",
-    "demo:upload": "node scripts/demo-upload.js",
-    "demo:transfer": "node scripts/demo-transfer.js",
-    "demo:flow": "node scripts/demo-complete-flow.js",
-    "setup:env": "node scripts/setup-env.js",
-    "install:all": "pnpm install",
-    "build:all": "pnpm build",
-    "dev:all": "pnpm dev"
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.53.0"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.1",
-    "@supabase/supabase-js": "^2.53.0",
-    "turbo": "^2.3.0",
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.9",
+    "@types/node": "^20.19.9",
+    "@types/react": "^18.2.79",
+    "@types/react-dom": "^18.2.25",
     "@vitest/coverage-v8": "^2.1.9",
-    "eslint": "^9.32.0",
-    "@typescript-eslint/eslint-plugin": "^8.15.0",
-    "@typescript-eslint/parser": "^8.15.0",
-    "prettier": "^3.6.2",
-    "dotenv": "^17.2.1",
-    "form-data": "^4.0.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.9.2",
+    "vitest": "^2.1.9"
   },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "image",
+    "loading",
+    "fallback",
+    "blockchain",
+    "web3",
+    "supabase",
+    "ipfs",
+    "react",
+    "typescript",
+    "evermark"
+  ],
+  "author": "ipfsnut",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/ipfsnut/evermark-sdk.git"
   },
-  "author": "ipfsnut",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/ipfsnut/evermark-sdk/issues"
   },
   "homepage": "https://github.com/ipfsnut/evermark-sdk#readme",
-  "workspaces": [
-    "packages/*",
-    "apps/*", 
-    "tools/*"
-  ],
-  "packageManager": "pnpm@9.0.0"
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

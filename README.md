@@ -1,8 +1,6 @@
 # Evermark SDK
 
-> **🚧 Work in Progress**: This monorepo is actively being developed to solve complex image display issues in blockchain-based content systems.
-
-A TypeScript monorepo providing robust, tested image handling for content preservation applications. Built to solve the specific challenges of displaying images from multiple sources with intelligent fallbacks.
+A TypeScript SDK for robust image handling with intelligent fallbacks and storage orchestration. Built specifically for blockchain-based content systems that need reliable image display across multiple storage providers.
 
 ## 🎯 Problem Statement
 
@@ -11,35 +9,24 @@ Displaying images in modern web applications is complex when you have:
 - **Network reliability issues** 
 - **CORS authentication** requirements
 - **Performance optimization** needs
-- **Fallback strategies** for failed loads
+- **Automatic fallback strategies** for failed loads
 
-This SDK provides battle-tested solutions for these challenges.
-
-## 📦 Packages
-
-### Core Packages
-- **`@evermark-sdk/core`** - Pure TypeScript logic, zero dependencies
-- **`@evermark-sdk/browser`** - Browser-specific image loading *(coming soon)*
-- **`@evermark-sdk/react`** - React hooks and components *(coming soon)*
-
-### Development Tools
-- **`apps/test-app`** - Interactive testing environment *(coming soon)*
-- **`tools/url-tester`** - CLI debugging tools *(coming soon)*
+This SDK provides battle-tested solutions for these challenges in a single, unified package.
 
 ## 🚀 Quick Start
 
 ### Installation
 ```bash
-npm install @evermark-sdk/core
+npm install evermark-sdk
 # or
-yarn add @evermark-sdk/core
+yarn add evermark-sdk
 # or  
-pnpm add @evermark-sdk/core
+pnpm add evermark-sdk
 ```
 
 ### Basic Usage
 ```typescript
-import { resolveImageSources } from '@evermark-sdk/core';
+import { resolveImageSources } from 'evermark-sdk';
 
 // Input from your evermark data
 const sources = resolveImageSources({
@@ -49,120 +36,152 @@ const sources = resolveImageSources({
 });
 
 console.log('Sources to try:', sources);
-// [
-//   { url: 'https://supabase.storage.com/image.jpg', type: 'primary', priority: 1 },
-//   { url: 'https://supabase.storage.com/thumb.jpg', type: 'thumbnail', priority: 2 },
-//   { url: 'https://gateway.pinata.cloud/ipfs/Qm...', type: 'fallback', priority: 3 }
-// ]
+// Returns prioritized array of image sources with intelligent fallbacks
 ```
 
-### Advanced Configuration
+## 📦 What's Included
+
+### Core Functions
+- **`resolveImageSources()`** - Smart source prioritization and fallback logic
+- **`ImageLoader`** - Browser image loading with retries and CORS handling
+- **`StorageOrchestrator`** - Automatic IPFS → Supabase transfer flow
+- **React Components** - `EvermarkImage`, `ImageDisplay`, `ImageUpload`
+- **React Hooks** - `useImageLoader`, `useStorageFlow`, `useImageUpload`
+
+### 3-Step Storage Flow
+The SDK implements an intelligent 3-step process:
+
+1. **Check Supabase** - Try loading from Supabase Storage first
+2. **Auto-Transfer** - If missing, automatically transfer from IPFS to Supabase  
+3. **Graceful Fallback** - Fall back to thumbnails or alternative sources
+
 ```typescript
-import { resolveImageSources, createMobileOptimizedResolver } from '@evermark-sdk/core';
+import { EnhancedImageLoader } from 'evermark-sdk';
 
-// For mobile devices
-const mobileResolver = createMobileOptimizedResolver();
-const mobileSources = mobileResolver({
-  supabaseUrl: 'https://example.com/image.jpg',
-  thumbnailUrl: 'https://example.com/thumb.jpg',
-  preferThumbnail: true
+const loader = new EnhancedImageLoader({
+  autoTransfer: true,
+  storageConfig: {
+    supabase: {
+      url: 'https://your-project.supabase.co',
+      anonKey: 'your-anon-key',
+      bucketName: 'images'
+    },
+    ipfs: {
+      gateway: 'https://gateway.pinata.cloud/ipfs'
+    }
+  }
 });
 
-// Custom configuration
-const sources = resolveImageSources({
-  supabaseUrl: 'https://example.com/image.jpg',
+const result = await loader.loadImageWithStorageFlow({
+  supabaseUrl: 'https://supabase.co/storage/image.jpg',
   ipfsHash: 'QmHash...'
-}, {
-  maxSources: 3,
-  defaultTimeout: 5000,
-  includeIpfs: false,
-  mobileOptimization: true
 });
 ```
 
-## 🏗️ Development Setup
+## ⚛️ React Integration
 
-### Prerequisites
-- Node.js 18+
-- pnpm (recommended) or npm
+### Simple Image Display
+```typescript
+import { EvermarkImage } from 'evermark-sdk';
 
-### Getting Started
-```bash
-# Clone the repository
-git clone https://github.com/ipfsnut/evermark-sdk.git
-cd evermark-sdk
-
-# Install dependencies
-pnpm install
-
-# Run tests
-pnpm test
-
-# Run tests with coverage
-pnpm test:coverage
-
-# Build all packages
-pnpm build
-
-# Start development mode
-pnpm dev
+function MyComponent({ evermark }) {
+  return (
+    <EvermarkImage
+      evermark={evermark}
+      variant="hero"
+      enableAutoTransfer={true}
+      storageConfig={storageConfig}
+    />
+  );
+}
 ```
 
-### Package Development
-```bash
-# Work on core package
-cd packages/core
+### Custom Hook Usage
+```typescript
+import { useImageLoader } from 'evermark-sdk';
 
-# Run tests in watch mode
-pnpm test:watch
+function CustomImage({ evermark }) {
+  const { imageUrl, isLoading, hasError, retry } = useImageLoader({
+    supabaseUrl: evermark.supabaseImageUrl,
+    ipfsHash: evermark.ipfsHash,
+    thumbnailUrl: evermark.thumbnailUrl
+  });
 
-# Type checking
-pnpm type-check
-
-# Build package
-pnpm build
+  if (isLoading) return <div>Loading...</div>;
+  if (hasError) return <button onClick={retry}>Retry</button>;
+  return <img src={imageUrl} alt={evermark.title} />;
+}
 ```
 
-## 🧪 Testing Philosophy
+### Storage Operations
+```typescript
+import { useStorageFlow } from 'evermark-sdk';
 
-This project emphasizes **comprehensive testing** to ensure reliability:
+function TransferComponent({ ipfsHash }) {
+  const { status, progress, startFlow } = useStorageFlow({
+    storageConfig,
+    autoStart: false
+  });
 
-- **Unit tests** for pure functions (95%+ coverage required)
-- **Integration tests** for cross-package compatibility  
-- **Browser tests** for real-world scenarios
-- **Performance tests** for optimization validation
-
-### Running Tests
-```bash
-# All packages
-pnpm test
-
-# Specific package
-cd packages/core && pnpm test
-
-# With coverage report
-pnpm test:coverage
-
-# Watch mode for development
-pnpm test:watch
+  return (
+    <div>
+      <button onClick={() => startFlow({ ipfsHash })}>
+        Transfer to Supabase
+      </button>
+      {progress && <div>Progress: {progress.percentage}%</div>}
+    </div>
+  );
+}
 ```
 
-## 📚 API Documentation
+## 🔧 Configuration
+
+### Storage Configuration
+```typescript
+import { createStorageOrchestrator } from 'evermark-sdk';
+
+const orchestrator = createStorageOrchestrator(
+  'https://your-project.supabase.co',
+  'your-anon-key',
+  'your-bucket-name',
+  existingSupabaseClient // optional
+);
+```
+
+### Advanced Image Loading
+```typescript
+import { ImageLoader } from 'evermark-sdk';
+
+const loader = new ImageLoader({
+  maxRetries: 3,
+  timeout: 10000,
+  useCORS: true,
+  debug: true
+});
+```
+
+## 🏗️ Architecture
+
+### Unified Package Structure
+```
+evermark-sdk/
+├── core/           # Pure TypeScript logic, zero dependencies
+├── browser/        # Browser-specific image loading & CORS
+├── storage/        # Supabase + IPFS orchestration
+└── react/          # React hooks and components
+```
+
+### Key Design Principles
+- **Zero external dependencies** in core logic
+- **Intelligent fallbacks** for network issues
+- **TypeScript strict mode** throughout
+- **Real data sources** - no mocks or placeholders
+- **Existing client support** - works with your Supabase setup
+
+## 📚 API Reference
 
 ### Core Types
 ```typescript
-interface ImageSource {
-  url: string;
-  type: 'primary' | 'thumbnail' | 'fallback' | 'placeholder';
-  priority: number;
-  timeout?: number;
-  metadata?: {
-    storageProvider?: 'supabase' | 'ipfs' | 'cdn' | 'external';
-    size?: 'thumbnail' | 'medium' | 'large' | 'original';
-    format?: 'jpg' | 'png' | 'gif' | 'webp' | 'svg';
-  };
-}
-
 interface ImageSourceInput {
   supabaseUrl?: string;
   thumbnailUrl?: string;
@@ -170,7 +189,20 @@ interface ImageSourceInput {
   processedUrl?: string;
   externalUrls?: string[];
   preferThumbnail?: boolean;
-  ipfsGateway?: string;
+}
+
+interface StorageConfig {
+  supabase: {
+    url: string;
+    anonKey: string;
+    bucketName?: string;
+    client?: SupabaseClient; // Use existing client
+  };
+  ipfs: {
+    gateway: string;
+    fallbackGateways?: string[];
+    timeout?: number;
+  };
 }
 ```
 
@@ -179,83 +211,61 @@ interface ImageSourceInput {
 - `isValidUrl(url)` - URL validation
 - `isValidIpfsHash(hash)` - IPFS hash validation  
 - `createIpfsUrl(hash, gateway?)` - IPFS URL generation
-- `validateImageSources(sources)` - Source validation
-- `filterSourcesByCondition(sources, condition)` - Conditional filtering
+- `createDefaultStorageConfig()` - Quick config setup
 
-## 🔧 Integration Examples
+## 🧪 Error Handling
 
-### React Integration (Future)
+The SDK provides comprehensive error handling with detailed debugging:
+
 ```typescript
-// Coming soon: @evermark-sdk/react
-import { useImageLoader } from '@evermark-sdk/react';
+import { useImageLoader } from 'evermark-sdk';
 
-function ImageComponent({ evermark }) {
-  const { status, finalUrl, retry } = useImageLoader({
-    supabaseUrl: evermark.supabaseImageUrl,
-    thumbnailUrl: evermark.thumbnailUrl,
-    ipfsHash: evermark.ipfsHash
-  });
+const { imageUrl, hasError, error, attempts } = useImageLoader(sources, {
+  debug: true // Enable detailed logging
+});
 
-  if (status === 'loading') return <ImageSkeleton />;
-  if (status === 'failed') return <RetryButton onClick={retry} />;
-  return <img src={finalUrl} alt={evermark.title} />;
+// Access detailed failure information
+if (hasError) {
+  console.log('Failed attempts:', attempts);
+  // Each attempt includes: url, success, error, timing
 }
 ```
 
-### Vue Integration (Future)
+## 🚧 Migration from Monorepo
+
+If you're migrating from the old `@evermark-sdk/*` packages:
+
 ```typescript
-// Community package potential
-import { createImageLoader } from '@evermark-sdk/vue';
+// Old (multiple packages)
+import { resolveImageSources } from '@evermark-sdk/core';
+import { ImageLoader } from '@evermark-sdk/browser';
+import { EvermarkImage } from '@evermark-sdk/react';
 
-const { status, finalUrl, retry } = createImageLoader({
-  supabaseUrl: props.evermark.supabaseImageUrl,
-  thumbnailUrl: props.evermark.thumbnailUrl,
-  ipfsHash: props.evermark.ipfsHash
-});
+// New (unified package)
+import { 
+  resolveImageSources, 
+  ImageLoader, 
+  EvermarkImage 
+} from 'evermark-sdk';
 ```
-
-## 🛣️ Roadmap
-
-### Phase 1: Core Foundation ✅
-- [x] Pure TypeScript image resolution logic
-- [x] Comprehensive test suite
-- [x] URL validation and IPFS handling
-- [x] Source prioritization and filtering
-
-### Phase 2: Browser Integration (Week 2)
-- [ ] Browser-specific image loading
-- [ ] CORS handling and authentication
-- [ ] Performance monitoring
-- [ ] Memory leak prevention
-
-### Phase 3: React Integration (Week 3)  
-- [ ] React hooks for image loading
-- [ ] Component library
-- [ ] State management integration
-- [ ] Performance optimization
-
-### Phase 4: Tooling & Publishing (Week 4)
-- [ ] Interactive test application
-- [ ] CLI debugging tools
-- [ ] NPM publishing
-- [ ] Documentation site
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! The codebase is organized for clarity:
 
-### Development Workflow
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes with tests
-4. Ensure all tests pass: `pnpm test`
-5. Submit a pull request
+1. **Core logic** in `/src/core` - Pure functions, no side effects
+2. **Browser APIs** in `/src/browser` - DOM, fetch, CORS handling  
+3. **Storage ops** in `/src/storage` - Supabase + IPFS integration
+4. **React layer** in `/src/react` - Hooks and components
 
-### Code Standards
-- **TypeScript strict mode** required
-- **95%+ test coverage** for new code
-- **ESLint + Prettier** for formatting
-- **Conventional commits** for clear history
+### Development
+```bash
+git clone https://github.com/ipfsnut/evermark-sdk.git
+cd evermark-sdk
+npm install
+npm run build
+npm test
+```
 
 ## 📄 License
 
@@ -265,8 +275,8 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 - **GitHub**: https://github.com/ipfsnut/evermark-sdk
 - **Issues**: https://github.com/ipfsnut/evermark-sdk/issues
-- **Discussions**: https://github.com/ipfsnut/evermark-sdk/discussions
+- **NPM**: https://www.npmjs.com/package/evermark-sdk
 
 ---
 
-**Built with ❤️ to solve real image loading challenges in decentralized applications.**
+**Built to solve real image loading challenges in decentralized applications. 🚀**

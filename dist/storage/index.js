@@ -1,0 +1,9 @@
+/**
+ * Storage module exports
+ * MINIMAL CHANGES: Fixed import paths only
+ */
+// Main classes
+export { SupabaseStorageClient } from './supabase-client.js';
+export { IPFSClient } from './ipfs-client.js';
+export { StorageOrchestrator } from './storage-orchestrator.js';
+//# sourceMappingURL=index.js.map

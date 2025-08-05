@@ -25,24 +25,19 @@
     "declarationMap": true,
     "sourceMap": true,
     "removeComments": false,
-    "importHelpers": false
+    "importHelpers": false,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx"
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "coverage",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "apps/*/dist",
-    "packages/*/dist",
-    "tools/*/dist",
-    "**/README.md",
-    "**/CHANGELOG.md"
+  "include": [
+    "src/**/*"
   ],
-  "references": [
-    { "path": "./packages/core" },
-    { "path": "./packages/storage" },
-    { "path": "./packages/browser" },
-    { "path": "./packages/react" }
+  "exclude": [
+    "dist",
+    "node_modules",
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }

@@ -1,0 +1,96 @@
+/**
+ * Integrates existing ImageLoader with storage orchestration
+ * MINIMAL CHANGES: Only fixed import paths
+ */
+import { ImageLoader } from './image-loader.js';
+import { StorageOrchestrator } from '../storage/storage-orchestrator.js';
+import { resolveImageSources } from '../core/url-resolver.js';
+/**
+ * Enhanced image loader that integrates with storage orchestration
+ * Implements your 3-step flow seamlessly with existing image loading
+ */
+export class EnhancedImageLoader extends ImageLoader {
+    orchestrator = null;
+    autoTransfer;
+    onStorageProgress;
+    constructor(options = {}) {
+        const { storageConfig, autoTransfer = false, onStorageProgress, ...baseOptions } = options;
+        super(baseOptions);
+        this.autoTransfer = autoTransfer;
+        // Fix TypeScript strict mode issue - only assign if defined
+        if (onStorageProgress) {
+            this.onStorageProgress = onStorageProgress;
+        }
+        if (storageConfig) {
+            this.orchestrator = new StorageOrchestrator(storageConfig);
+        }
+    }
+    /**
+     * Load image with automatic storage flow integration
+     * This is your main entry point that implements the 3-step process
+     */
+    async loadImageWithStorageFlow(input) {
+        try {
+            // If we have storage orchestration enabled, run the flow first
+            if (this.orchestrator && this.autoTransfer) {
+                console.log('🔄 Starting storage flow before image loading...');
+                const flowResult = await this.orchestrator.ensureImageInSupabase(input, this.onStorageProgress);
+                // Update input with the result from storage flow
+                const enhancedInput = {
+                    ...input,
+                    supabaseUrl: flowResult.finalUrl
+                };
+                // Resolve sources with the enhanced input
+                const sources = resolveImageSources(enhancedInput, {
+                    maxSources: 3,
+                    includeIpfs: !flowResult.transferPerformed // Skip IPFS if we just transferred
+                });
+                // Load using parent ImageLoader
+                const loadResult = await this.loadImage(sources);
+                console.log(`✅ Image loading complete: ${loadResult.success ? 'success' : 'failed'}`);
+                // Return result with optional transferResult
+                const result = {
+                    ...loadResult
+                };
+                if (flowResult.transferResult) {
+                    result.transferResult = flowResult.transferResult;
+                }
+                return result;
+            }
+            // Fallback to normal loading without storage integration
+            const sources = resolveImageSources(input);
+            const loadResult = await this.loadImage(sources);
+            console.log(`📷 Standard image loading: ${loadResult.success ? 'success' : 'failed'}`);
+            return loadResult;
+        }
+        catch (error) {
+            console.error('❌ Enhanced image loading failed:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Enhanced loading failed'
+            };
+        }
+    }
+    /**
+     * Manual storage flow trigger (without loading)
+     */
+    async runStorageFlow(input) {
+        if (!this.orchestrator) {
+            throw new Error('Storage orchestrator not configured');
+        }
+        return await this.orchestrator.ensureImageInSupabase(input, this.onStorageProgress);
+    }
+    /**
+     * Test storage connectivity
+     * TODO: Implement when StorageOrchestrator has test methods
+     */
+    async testStorageStatus() {
+        // Placeholder - just return basic status for now
+        return {
+            available: this.orchestrator !== null,
+            supabase: { available: this.orchestrator !== null },
+            ipfs: { available: this.orchestrator !== null, gateways: [] }
+        };
+    }
+}
+//# sourceMappingURL=enhanced-image-loader.js.map
